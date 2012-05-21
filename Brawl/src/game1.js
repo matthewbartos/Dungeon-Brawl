@@ -22,7 +22,7 @@ window.onload = function() {
 		var g1 = new Graphics();
 		g1.beginFill(Graphics.getRGB(0,0,0)).drawCircle(0,0,10);
 		
-		for(var i = 0; i < 700; i+=10){
+		for(i = 0; i < 700; i+=10){
 			(function(){
 			var s = new Shape(g1);
 			s.x = i;
@@ -43,7 +43,7 @@ window.onload = function() {
 			})();
 		}
 		
-		for(var i = 0; i < 700; i+=10){
+		for(i = 0; i < 700; i+=10){
 			(function(){
 			var s = new Shape(g1);
 			s.x = i;
