@@ -1,6 +1,8 @@
 
 
-window.onresize = function(){console.log("onresize");}
+window.onresize = function(){
+    
+}
 
 window.onload = function(){
 }
