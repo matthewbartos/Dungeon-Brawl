@@ -1,3 +1,12 @@
+html{
+    min-height: 100%;
+}
+
+body{
+    background: -moz-linear-gradient(to top, rgb(0,0,0), rgb(0, 0, 64),
+        rgb(0, 0, 64));
+}
+
 #game{
     margin: 0px auto;
     width: 500px;
@@ -6,5 +15,16 @@
 
 canvas{
     width: 500px;
+}
+
+button{
+    background: url(graphics/button.png) repeat-x 0px 0px;
+    min-width: 256px;
+    min-height: 128px;
+    border: none;
+    color: rgb(256, 128, 0);
+    font: 24px sans-serif;
+    margin: 0 auto;
+    display: block;
 }
 
