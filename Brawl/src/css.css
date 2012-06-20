@@ -1,39 +1,51 @@
-#game{
-    margin: 0px auto;
-    width: 500px;
-    text-align: center;
-}
-
-canvas{
-    width: 500px;
-}
-
-button{
-    background: url(graphics/button.png);
-    min-width: 256px;
-    min-height: 128px;
-    border: none;
-    color: rgb(256, 128, 0);
-    font: 24px 'SilkscreenExpandedBold', Arial, sans-serif;
-    margin: 0 auto;
-    display: block;
-}
-
-button:hover{
-    background: url(graphics/buttonHover.gif);
-}
-
 html{
     min-height: 100%;
 }
 
 body{
+    font: 34px 'SilkscreenExpandedBold', Arial, sans-serif;
     background: -moz-linear-gradient(to top, rgb(0,0,0), rgb(0, 0, 64),
         rgb(0, 0, 64));
     background: -webkit-linear-gradient(90deg, rgb(0,0,0), rgb(0, 0, 64),
         rgb(0, 0, 64));
     background: -o-linear-gradient(to top, rgb(0,0,0), rgb(0, 0, 64),
         rgb(0, 0, 64));
+}
+
+div{
+    margin: 0 auto;
+    background-color: #000;
+}
+
+canvas{
+    position: absolute;
+    width: 500px;
+}
+
+button{
+    background: url(graphics/button.png) no-repeat;
+    background-size: 100% 100%;
+    min-height: 128px;
+    border: none;
+    color: rgb(256, 128, 0);
+    font: 1em  'SilkscreenExpandedBold', Arial, sans-serif;
+    margin: 0 auto;
+    display: block;
+    width: 50%;
+}
+
+button:hover{
+    background: url(graphics/buttonHover.gif) no-repeat;
+}
+
+#dGame{
+    margin: 0px auto;
+    width: 500px;
+}
+
+#dMenu{
+    width: 40%;
+    padding: 10px;
 }
 
 @font-face {
