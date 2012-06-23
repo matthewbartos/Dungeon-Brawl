@@ -4,6 +4,9 @@ window.onresize = function(){
     
 }
 //bootstrap
+
+
+
 window.onload = function(){
     //declaring public HTML elements
     //@type HTMLDocument
