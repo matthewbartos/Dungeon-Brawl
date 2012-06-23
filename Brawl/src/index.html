@@ -5,16 +5,22 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="css.css" type="text/css"/>
      <!---   <script src="http://code.createjs.com/easeljs-0.4.2.min.js"></script> -->
-        <script src="easel.js"></script>
-        <script src="menu.js"></script>
+        <script src="js/easel.js"></script>
+        <script src="js/menu.js"></script>
+        <script src="js/System.js"></script>
+        <script src="maps/basic.json"></script>
     </head>
     <body>
         <div id="dGame" hidden>
-            <canvas id="canvasGUI"></canvas>
+            <canvas id="canvasMap"></canvas>
             <canvas id="canvasPlayer"></canvas>
+            <canvas id="canvasGUI"></canvas>
         </div>
         <div id="dMenu">
             <button id="bStart">START</button>
+        </div>
+        <div id="dMapChoose" hidden>
+            <button id="bMap1">Mountain Top</button>
         </div>
     </body>
 </html>

@@ -15,6 +15,8 @@ body{
 div{
     margin: 0 auto;
     background-color: #000;
+    width: 40%;
+    padding: 10px;
 }
 
 canvas{
@@ -48,11 +50,6 @@ button:hover{
 #dGame{
     margin: 0px auto;
     width: 500px;
-}
-
-#dMenu{
-    width: 40%;
-    padding: 10px;
 }
 
 @font-face {
