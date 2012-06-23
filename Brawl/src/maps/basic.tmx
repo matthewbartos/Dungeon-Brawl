@@ -2,11 +2,6 @@
 <map version="1.0" orientation="orthogonal" width="14" height="15" tilewidth="32" tileheight="32">
  <tileset firstgid="1" name="Mountains" tilewidth="32" tileheight="32">
   <image source="../graphics/mountains.png" width="384" height="288"/>
-  <tile id="54">
-   <properties>
-    <property name="walkable" value="true"/>
-   </properties>
-  </tile>
  </tileset>
  <tileset firstgid="109" name="Objects" tilewidth="32" tileheight="32">
   <image source="../graphics/objects.png" width="128" height="96"/>

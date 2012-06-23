@@ -75,13 +75,6 @@ var map1 = { "height":15,
             },
          "spacing":0,
          "tileheight":32,
-         "tileproperties":
-            {
-             "54":
-                {
-                 "walkable":"true"
-                }
-            },
          "tilewidth":32
         }, 
         {
