@@ -10,14 +10,15 @@ Map = {
         //checking which tiles will be used
         var used = [];
         map.layers.forEach(function(i){
-            if(i.name.indexOf("obj") != -1) return;
+            var name = i.name;
+            if(name.indexOf("obj") != -1 || name.indexOf("lev") != -1) return;
             for(var j in i.data){
                 used[parseInt(i.data[j])] = true;
             }
         });
         map.tilesets.forEach(function(i){
             //checking if it's not the object layer
-            if(i.name != "Objects"){
+            if(i.name != "Objects" && i.name != "Levels"){
                 var img = new Image();
                 //needs change
                 img.src = "graphics" + i.image.substring(11,i.image.length);
