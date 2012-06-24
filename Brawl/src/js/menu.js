@@ -22,6 +22,9 @@ window.onload = function(){
     }
     document.getElementById("bMap1").onclick = function(){
         dMapChooseHide();
+        Map.onParsed = function(){
+            Game.start();
+        }
         Map.parseMap(map1);
     }
 }

@@ -46,8 +46,8 @@ Map = {
                     }
                 }
             }
-            
         });
-        
-    }
+        if(this.onParsed) this.onParsed();
+    },
+    onParsed: null
 }

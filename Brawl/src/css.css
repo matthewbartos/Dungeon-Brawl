@@ -1,5 +1,7 @@
 html{
     min-height: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 body{
@@ -10,12 +12,14 @@ body{
         rgb(0, 0, 64));
     background: -o-linear-gradient(to top, rgb(0,0,0), rgb(0, 0, 64),
         rgb(0, 0, 64));
+    height: 100%;
 }
 
 div{
     margin: 0 auto;
     background-color: #000;
     width: 40%;
+    height: 80%;
     padding: 10px;
 }
 
@@ -48,8 +52,7 @@ button:hover{
 }
 
 #dGame{
-	margin: 0px auto;
-    width: 500px;
+    margin: 0px auto;
 }
 
 @font-face {
