@@ -6,10 +6,17 @@ window.onresize = function(){
 //bootstrap
 window.onload = function(){
     //declaring public HTML elements
-    //@type HTMLDocument
     dMenu = document.getElementById("dMenu");
     dGame = document.getElementById("dGame");
     dMapChoose = document.getElementById("dMapChoose");
+    canvasMapBase = document.getElementById("canvasMapBase");
+    canvasPlayer = document.getElementById("canvasPlayer");
+    canvasGUI = document.getElementById("canvasGUI");
+    //setting up the width and height of canvases
+    canvasMapBase.width = canvasPlayer.width = canvasGUI.width = 
+        dMenu.clientWidth;
+    canvasMapBase.height = canvasPlayer.height = canvasGUI.height = 
+        dMenu.clientHeight;
     //function run everytime a map i chosen
     function dMapChooseHide(){
         dMapChoose.hidden = true;
@@ -22,9 +29,10 @@ window.onload = function(){
     }
     document.getElementById("bMap1").onclick = function(){
         dMapChooseHide();
-        Map.onParsed = function(){
-            Game.start();
+        initializeStages();
+        GameMap.onParsed = function(){
+            GameMap.draw();
         }
-        Map.parseMap(map1);
+        GameMap.parseMap(map1);
     }
 }
