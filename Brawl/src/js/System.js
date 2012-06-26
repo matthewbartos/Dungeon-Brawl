@@ -7,6 +7,7 @@ GameMap = {
      * @param {Object} map Map to parse
      */
     parseMap: function(map){
+        console.time("map load");
         this.tmxMap = map;
         //checking which tiles will be used
         var used = [],
@@ -70,7 +71,7 @@ GameMap = {
                         } 
                         if(image) GameMap.map[x][y].image = image;
                     }
-                }else if(name.indexOf("dec") !== -1){
+                }else if(name == "dec"){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
                         x = Math.floor(j / i.width);
@@ -81,6 +82,17 @@ GameMap = {
                         } 
                         if(image) GameMap.map[x][y].decImage = image;
                     }
+                }else if(name.indexOf("dec") != -1){
+                    for(j in i.data){
+                        image = imageArray[i.data[j]];
+                        x = Math.floor(j / i.width);
+                        y = j % i.width
+                        if(!GameMap.map[x]) GameMap.map[x] = [];
+                        if(!GameMap.map[x][y]){
+                            GameMap.map[x][y] = {};
+                        } 
+                        if(image) GameMap.map[x][y].decFrontImage = image;
+                    }
                 }
             });
             if(GameMap.onParsed) GameMap.onParsed();
@@ -89,25 +101,37 @@ GameMap = {
     draw: function(){
         if(!this.tmxMap) throw "no map parsed";
         var map = this.map;
+        containerMapBack = new Container();
+        stageBaseMap.addChild(containerMapBack);
+        containerMapFront = new Container();
+        stageMapFront.addChild(containerMapFront);
+        containerMapBack.scaleX = containerMapBack.scaleY = 1.5;
         for(var y = 0; y < map.length; y++){
-            console.log("lol");
             for(var x = 0; x <  map[y].length; x++){
                 if(map[y][x].image){
                     var btm = new Bitmap(map[y][x].image);
                     btm.y = y*32;
                     btm.x = x*32;
-                    mapBaseStage.addChild(btm);
-                    mapBaseStage.update();
+                    containerMapBack.addChild(btm);
+                    stageBaseMap.update();
                 }
                 if(map[y][x].decImage){
                     btm = new Bitmap(map[y][x].decImage);
                     btm.y = y*32;
                     btm.x = x*32;
-                    mapBaseStage.addChild(btm);
-                    mapBaseStage.update();
+                    containerMapBack.addChild(btm);
+                    stageBaseMap.update();
+                }
+                if(map[y][x].decFrontImage){
+                    btm = new Bitmap(map[y][x].decFrontImage);
+                    btm.y = y*32;
+                    btm.x = x*32;
+                    containerMapBack.addChild(btm);
+                    stageMapFront.update();
                 }
             }
         }
+        console.timeEnd("map load");
     },
     map: [],
     tmxMap: null,
@@ -116,5 +140,6 @@ GameMap = {
 
 
 function initializeStages(){
-    mapBaseStage = new Stage(canvasMapBase);
+    stageBaseMap = new Stage(canvasMapBase);
+    stageMapFront = new Stage(canvasMapFront);
 }

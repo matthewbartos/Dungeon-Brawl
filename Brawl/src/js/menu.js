@@ -11,11 +11,11 @@ window.onload = function(){
     dMapChoose = document.getElementById("dMapChoose");
     canvasMapBase = document.getElementById("canvasMapBase");
     canvasPlayer = document.getElementById("canvasPlayer");
-    canvasGUI = document.getElementById("canvasGUI");
+    canvasMapFront = document.getElementById("canvasMapFront");
     //setting up the width and height of canvases
-    canvasMapBase.width = canvasPlayer.width = canvasGUI.width = 
+    canvasMapBase.width = canvasPlayer.width = canvasMapFront.width = 
         dMenu.clientWidth;
-    canvasMapBase.height = canvasPlayer.height = canvasGUI.height = 
+    canvasMapBase.height = canvasPlayer.height = canvasMapFront.height = 
         dMenu.clientHeight;
     //function run everytime a map i chosen
     function dMapChooseHide(){
