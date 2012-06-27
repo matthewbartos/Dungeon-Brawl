@@ -8,7 +8,7 @@ GameMap = {
      */
     parseMap: function(map){
         console.time("map load");
-        this.tmxMap = map;
+        GameMap.tmxMap = map;
         //checking which tiles will be used and how many of them are there
         var used = [],
         usedCount = 0,
@@ -44,14 +44,14 @@ GameMap = {
                             continue w;
                         }
                         canvas.width = canvas.height = 32;
-                        context.drawImage(img, x * 32, y * 32, 32, 32, 0, 0, 
+                        context.drawImage(img, x * 32, y * 32, 32, 32, 0, 0,
                             canvas.width, canvas.height);
                         var imgTemp = new Image();
                         imgTemp.src = canvas.toDataURL();
                         imgTemp.onload = function(){
                             ++loadedCount;
                             //checking if all images are loaded
-                            if(loadedCount === usedCount) onImagesLoaded();
+                            if(loadedCount === usedCount) _continueMapParse();
                         }
                         imageArray[index] = imgTemp;
                         ++index;
@@ -60,9 +60,10 @@ GameMap = {
             }
         });
         /**
-         * Adding the images to the GameMap.map array of objects
+         * Adding the images and other properties to the GameMap.map array of
+         * objects
          */
-        function onImagesLoaded(){
+        function _continueMapParse(){
             map.layers.forEach(function(i){
                 var name = i.name;
                 if(name.indexOf("tile") !== -1){
@@ -74,7 +75,7 @@ GameMap = {
                         if(!GameMap.map[x]) GameMap.map[x] = [];
                         if(!GameMap.map[x][y]){
                             GameMap.map[x][y] = {};
-                        } 
+                        }
                         if(image) GameMap.map[x][y].image = image;
                     }
                 }else if(name === "dec"){
@@ -85,7 +86,7 @@ GameMap = {
                         if(!GameMap.map[x]) GameMap.map[x] = [];
                         if(!GameMap.map[x][y]){
                             GameMap.map[x][y] = {};
-                        } 
+                        }
                         if(image) GameMap.map[x][y].decImage = image;
                     }
                 }else if(name.indexOf("dec") !== -1){
@@ -96,8 +97,25 @@ GameMap = {
                         if(!GameMap.map[x]) GameMap.map[x] = [];
                         if(!GameMap.map[x][y]){
                             GameMap.map[x][y] = {};
-                        } 
+                        }
                         if(image) GameMap.map[x][y].decFrontImage = image;
+                    }
+                }else if(name === "lev"){
+                    var firstgrid = 0;
+                    GameMap.tmxMap.tilesets.forEach(function(i){
+                        if(i.name === "Levels") firstgrid = i.firstgid; //(SIC)
+                    });
+                    if(!firstgrid) throw "No Levels tileset used";
+                    for(j in i.data){
+                        //because 0 - 1, 1 - 1.5, 2 - 2 and so on
+                        var level = (i.data[j] - firstgrid) / 2 + 1;
+                        x = Math.floor(j / i.width);
+                        y = j % i.width
+                        if(!GameMap.map[x]) GameMap.map[x] = [];
+                        if(!GameMap.map[x][y]){
+                            GameMap.map[x][y] = {};
+                        }
+                        if(level >= 0 ) GameMap.map[x][y].level = level;
                     }
                 }
             });
@@ -105,7 +123,7 @@ GameMap = {
         }
     },
     /**
-     * Draws the map on the canvases 
+     * Draws the map on the canvases
      */
     draw: function(){
         if(!this.tmxMap) throw "no map parsed";
@@ -190,13 +208,14 @@ GameMap = {
     },
     moveToTile: function(x,y){
         var i = 1;
-        var time = 100;
+        var time = 80;
         var vec = GameMap.getVectors(x, y);
         x = vec.x;
         y = vec.y;
+        var tet = time*(time-1)*(time+1)/6
         function callback(){
-            if(i <= time){
-                GameMap.move(x*(time-i)*i/166650, y*(time-i)*i/166650);
+            if(i < time){
+                GameMap.move(x*(time-i)*i/tet, y*(time-i)*i/tet);
                 ++i;
                 mozRequestAnimationFrame(callback);
             }else return;
