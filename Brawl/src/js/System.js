@@ -9,7 +9,7 @@ GameMap = {
     parseMap: function(map){
         console.time("map load");
         this.tmxMap = map;
-        //checking which tiles will be used
+        //checking which tiles will be used and how many of them are there
         var used = [],
         usedCount = 0,
         loadedCount = 0;
@@ -17,6 +17,7 @@ GameMap = {
             var name = i.name;
             if(name.indexOf("obj") != -1 || name.indexOf("lev") != -1) return;
             for(var j in i.data){
+                //console.log(i.data[j], !used[parseInt(i.data[j])]);
                 if(!used[parseInt(i.data[j])] && i.data[j] != 0){
                     used[parseInt(i.data[j])] = true;
                     ++usedCount;
@@ -49,6 +50,7 @@ GameMap = {
                         imgTemp.src = canvas.toDataURL();
                         imgTemp.onload = function(){
                             ++loadedCount;
+                            //checking if all images are loaded
                             if(loadedCount === usedCount) onImagesLoaded();
                         }
                         imageArray[index] = imgTemp;
@@ -57,6 +59,9 @@ GameMap = {
                 }
             }
         });
+        /**
+         * Adding the images to the GameMap.map array of objects
+         */
         function onImagesLoaded(){
             map.layers.forEach(function(i){
                 var name = i.name;
@@ -65,13 +70,14 @@ GameMap = {
                         var image = imageArray[i.data[j]];
                         var x = Math.floor(j / i.width);
                         var y = j % i.width
+                        //init if not initialized
                         if(!GameMap.map[x]) GameMap.map[x] = [];
                         if(!GameMap.map[x][y]){
                             GameMap.map[x][y] = {};
                         } 
                         if(image) GameMap.map[x][y].image = image;
                     }
-                }else if(name == "dec"){
+                }else if(name === "dec"){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
                         x = Math.floor(j / i.width);
@@ -82,7 +88,7 @@ GameMap = {
                         } 
                         if(image) GameMap.map[x][y].decImage = image;
                     }
-                }else if(name.indexOf("dec") != -1){
+                }else if(name.indexOf("dec") !== -1){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
                         x = Math.floor(j / i.width);
@@ -98,40 +104,104 @@ GameMap = {
             if(GameMap.onParsed) GameMap.onParsed();
         }
     },
+    /**
+     * Draws the map on the canvases 
+     */
     draw: function(){
         if(!this.tmxMap) throw "no map parsed";
         var map = this.map;
+        //declaring the containers for easy movement of the map
         containerMapBack = new Container();
         stageBaseMap.addChild(containerMapBack);
         containerMapFront = new Container();
         stageMapFront.addChild(containerMapFront);
         containerMapBack.scaleX = containerMapBack.scaleY = 1.5;
+        //Graphics used to draw the grid
+        var g = new Graphics();
+        g.beginStroke(Graphics.getRGB(256,256,256));
         for(var y = 0; y < map.length; y++){
+            g.moveTo(0, y*33).lineTo(this.tmxMap.width*33, y*33);
             for(var x = 0; x <  map[y].length; x++){
                 if(map[y][x].image){
                     var btm = new Bitmap(map[y][x].image);
-                    btm.y = y*32;
-                    btm.x = x*32;
+                    btm.y = y*33;
+                    btm.x = x*33;
                     containerMapBack.addChild(btm);
-                    stageBaseMap.update();
+                    delete map[y][x].image;
                 }
                 if(map[y][x].decImage){
                     btm = new Bitmap(map[y][x].decImage);
-                    btm.y = y*32;
-                    btm.x = x*32;
+                    btm.y = y*33;
+                    btm.x = x*33;
                     containerMapBack.addChild(btm);
-                    stageBaseMap.update();
+                    delete map[y][x].decImage;
                 }
                 if(map[y][x].decFrontImage){
                     btm = new Bitmap(map[y][x].decFrontImage);
-                    btm.y = y*32;
-                    btm.x = x*32;
+                    btm.y = y*33;
+                    btm.x = x*33;
                     containerMapBack.addChild(btm);
-                    stageMapFront.update();
+                    delete map[y][x].decFrontImage;
                 }
+                if(y == 0) g.moveTo(x*33, 0).lineTo(x*33, this.tmxMap.height*33);
             }
         }
+        //drawing the final lines of the grid
+        g.moveTo(0, y*33).lineTo(this.tmxMap.width*33, y*33).moveTo(x*33, 0)
+            .lineTo(x*33, this.tmxMap.height*33);
+        containerMapBack.addChild(new Shape(g));
+        stageMapFront.update();
+        stageBaseMap.update();
         console.timeEnd("map load");
+    },
+    /**
+     * Moves the map to the specified coordinates
+     * @param {Number} x Coord x
+     * @param {Number} y Coord y
+     */
+    move: function(x,y){
+        containerMapBack.x += x;
+        containerMapBack.y += y;
+        containerMapFront.x += x;
+        containerMapFront.y += y;
+        stageBaseMap.update();
+        stageMapFront.update();
+    },
+    /**
+     * Moves the map to specified (by coords) tile
+     * @param {Number} x Coord x
+     * @param {Number} y Coord y
+     */
+    showTile: function(x,y){
+        var vec = GameMap.getVectors(x,y);
+        GameMap.move(vec.x, vec.y);
+    },
+    /**
+     * Shows by how much the map should be moved to show the tile (specified
+     * by coords) in the middle of the map
+     * @param {Number} x Coord x
+     * @param {Number} y Coord y
+     * @returns {Object} Object with values x and y
+     */
+    getVectors: function(x,y){
+        x = -containerMapBack.x - x*33 + canvasMapBase.width/2 - 32;
+        y = -containerMapBack.y - y*33 + canvasMapBase.height/2 - 32;
+        return {x: x, y:y}
+    },
+    moveToTile: function(x,y){
+        var i = 1;
+        var time = 100;
+        var vec = GameMap.getVectors(x, y);
+        x = vec.x;
+        y = vec.y;
+        function callback(){
+            if(i <= time){
+                GameMap.move(x*(time-i)*i/166650, y*(time-i)*i/166650);
+                ++i;
+                mozRequestAnimationFrame(callback);
+            }else return;
+        }
+        mozRequestAnimationFrame(callback);
     },
     map: [],
     tmxMap: null,
