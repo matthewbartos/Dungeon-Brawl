@@ -36,3 +36,5 @@ window.onload = function(){
         GameMap.parseMap("basic");
     }
 }
+
+//test
