@@ -8,62 +8,81 @@ GameMap = {
      */
     parseMap: function(map){
         console.time("map load");
-        GameMap.tmxMap = map;
-        //checking which tiles will be used and how many of them are there
-        var used = [],
-        usedCount = 0,
-        loadedCount = 0;
-        map.layers.forEach(function(i){
-            var name = i.name;
-            if(name.indexOf("obj") != -1 || name.indexOf("lev") != -1) return;
-            for(var j in i.data){
-                //console.log(i.data[j], !used[parseInt(i.data[j])]);
-                if(!used[parseInt(i.data[j])] && i.data[j] != 0){
-                    used[parseInt(i.data[j])] = true;
-                    ++usedCount;
-                }
-            }
-        });
         var imageArray = [];
-        map.tilesets.forEach(function(i){
-            //checking if it's not the object or levels layer
-            if(i.name != "Objects" && i.name != "Levels"){
-                var img = new Image();
-                //needs change
-                img.src = "graphics" + i.image.substring(11,i.image.length);
-                //cutting the image
-                var index = parseInt(i.firstgid); //(SIC)
-                var canvas = document.createElement('canvas');
-                var context = canvas.getContext('2d');
-                canvas.width = canvas.height = 32;
-                for(var y = 0; y < i.imageheight/32; y++){
-                    w:
-                    for(var x = 0; x < i.imagewidth/32; x++){
-                        if(!used[index]){
-                            ++index;
-                            continue w;
-                        }
-                        canvas.width = canvas.height = 32;
-                        context.drawImage(img, x * 32, y * 32, 32, 32, 0, 0,
-                            canvas.width, canvas.height);
-                        var imgTemp = new Image();
-                        imgTemp.src = canvas.toDataURL();
-                        imgTemp.onload = function(){
-                            ++loadedCount;
-                            //checking if all images are loaded
-                            if(loadedCount === usedCount) _continueMapParse();
-                        }
-                        imageArray[index] = imgTemp;
-                        ++index;
+        //getting the JSON file
+        var x = new XMLHttpRequest();
+        x.open("GET", "maps/" + map + ".json", true);
+        x.overrideMimeType("application/json");
+        x.send(null);
+        var JSONparsed = false;
+        x.onreadystatechange = function(){
+            if(x.responseText != "" && !JSONparsed){
+                map = JSON.parse(x.responseText);
+                _continueMapParse1();
+                JSONparsed = true;
+            }
+        }
+        /**
+         * Cutting the images in pieces
+         */
+        function _continueMapParse1(){
+            GameMap.tmxMap = map;
+            //checking which tiles will be used and how many of them are there
+            var used = [],
+            usedCount = 0,
+            loadedCount = 0;
+            map.layers.forEach(function(i){
+                var name = i.name;
+                if(name.indexOf("obj") != -1 || name.indexOf("lev") != -1) return;
+                for(var j in i.data){
+                    //console.log(i.data[j], !used[parseInt(i.data[j])]);
+                    if(!used[parseInt(i.data[j])] && i.data[j] != 0){
+                        used[parseInt(i.data[j])] = true;
+                        ++usedCount;
                     }
                 }
-            }
-        });
+            });
+            map.tilesets.forEach(function(i){
+                //checking if it's not the object or levels layer
+                if(i.name != "Objects" && i.name != "Levels"){
+                    var img = new Image();
+                    //needs change
+                    img.src = "graphics" + i.image.substring(11,i.image.length);
+                    //cutting the image
+                    var index = parseInt(i.firstgid); //(SIC)
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+                    canvas.width = canvas.height = 32;
+                    for(var y = 0; y < i.imageheight/32; y++){
+                        w:
+                        for(var x = 0; x < i.imagewidth/32; x++){
+                            if(!used[index]){
+                                ++index;
+                                continue w;
+                            }
+                            canvas.width = canvas.height = 32;
+                            context.drawImage(img, x * 32, y * 32, 32, 32, 0, 0,
+                                canvas.width, canvas.height);
+                            var imgTemp = new Image();
+                            imgTemp.src = canvas.toDataURL();
+                            imgTemp.onload = function(){
+                                ++loadedCount;
+                                //checking if all images are loaded
+                                if(loadedCount === usedCount) _continueMapParse2();
+                            }
+                            imageArray[index] = imgTemp;
+                            ++index;
+                        }
+                    }
+                }
+            });
+
+        }
         /**
          * Adding the images and other properties to the GameMap.map array of
          * objects
          */
-        function _continueMapParse(){
+        function _continueMapParse2(){
             map.layers.forEach(function(i){
                 var name = i.name;
                 if(name.indexOf("tile") !== -1){
