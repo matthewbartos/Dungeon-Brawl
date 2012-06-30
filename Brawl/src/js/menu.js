@@ -1,5 +1,4 @@
 
-
 window.onresize = function(){
 
 }
@@ -9,15 +8,11 @@ window.onload = function(){
     dMenu = document.getElementById("dMenu");
     dGame = document.getElementById("dGame");
     dMapChoose = document.getElementById("dMapChoose");
+    pFPS = document.getElementById("pFPS");
     canvasMapBase = document.getElementById("canvasMapBase");
     canvasPlayer = document.getElementById("canvasPlayer");
     canvasMapFront = document.getElementById("canvasMapFront");
-    //setting up the width and height of canvases
-    canvasMapBase.width = canvasPlayer.width = canvasMapFront.width =
-        dMenu.clientWidth;
-    canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
-        dMenu.clientHeight;
-    //function run everytime a map i chosen
+    //function run everytime a map is chosen
     function dMapChooseHide(){
         dMapChoose.hidden = true;
         dGame.hidden = false;
@@ -30,11 +25,19 @@ window.onload = function(){
     document.getElementById("bMap1").onclick = function(){
         dMapChooseHide();
         initializeStages();
+        //setting up the width and height of canvases
+        canvasMapBase.width = canvasPlayer.width = canvasMapFront.width =
+            Math.floor(dGame.clientWidth);
+        canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
+            Math.floor(dGame.clientHeight);
         GameMap.onParsed = function(){
             GameMap.draw();
         }
         GameMap.parseMap("basic");
     }
+    Ticker.addListener({
+        tick: function(){
+            pFPS.innerHTML = "FPS: " + Math.round(Ticker.getMeasuredFPS());
+        }
+    });
 }
-
-//test

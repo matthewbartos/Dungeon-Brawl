@@ -83,6 +83,8 @@ GameMap = {
          * objects
          */
         function _continueMapParse2(){
+            var objUsed = false;
+            var levUsed = false;
             map.layers.forEach(function(i){
                 var name = i.name;
                 if(name.indexOf("tile") !== -1){
@@ -121,10 +123,13 @@ GameMap = {
                     }
                 }else if(name === "lev"){
                     var firstgrid = 0;
-                    GameMap.tmxMap.tilesets.forEach(function(i){
-                        if(i.name === "Levels") firstgrid = i.firstgid; //(SIC)
-                    });
-                    if(!firstgrid) throw "No Levels tileset used";
+                    var tilesets = GameMap.tmxMap.tilesets
+                    for(j in tilesets){
+                        if(tilesets[j].name === "Levels"){
+                            firstgrid = tilesets[j].firstgid; //(SIC)
+                        }
+                    }
+                    if(!firstgrid) return;
                     for(j in i.data){
                         //because 0 - 1, 1 - 1.5, 2 - 2 and so on
                         var level = (i.data[j] - firstgrid) / 2 + 1;
@@ -136,8 +141,42 @@ GameMap = {
                         }
                         if(level >= 0 ) GameMap.map[x][y].level = level;
                     }
+                    levUsed = true;
+                }else if(name === "obj"){
+                    var actions = ['walk',                    //0
+                                    'jump',                   //1
+                                    'fall right',             //2
+                                    'climb ladder',           //3
+                                    'fall left',              //4
+                                    'die',                    //5
+                                    'fall to death',          //6
+                                    'walk',                   //7
+                                    null,                     //8
+                                    'item',                   //9
+                                    'walk on uneven terrain', //10
+                                    'spawn'];                 //11
+                    firstgrid = 0;
+                    tilesets = GameMap.tmxMap.tilesets
+                    for(j in tilesets){
+                        if(tilesets[j].name === "Objects"){
+                            firstgrid = parseInt(tilesets[j].firstgid); //(SIC)
+                        }
+                    }
+                    if(!firstgrid) return;
+                    for(j in i.data){
+                        x = Math.floor(j / i.width);
+                        y = j % i.width
+                        if(!GameMap.map[x]) GameMap.map[x] = [];
+                        if(!GameMap.map[x][y]){
+                            GameMap.map[x][y] = {};
+                        }
+                        GameMap.map[x][y].action = actions[i.data[j] - firstgrid];
+                    }
+                    objUsed = true;
                 }
             });
+            if(!levUsed) throw "Leveles layer not used";
+            if(!objUsed) throw "Objects layer not used";
             if(GameMap.onParsed) GameMap.onParsed();
         }
     },
@@ -148,11 +187,13 @@ GameMap = {
         if(!this.tmxMap) throw "no map parsed";
         var map = this.map;
         //declaring the containers for easy movement of the map
-        containerMapBack = new Container();
+        var MapContainer = function(){}
+        MapContainer.prototype = new Container();
+        MapContainer.prototype.scaleY = MapContainer.prototype.scaleX = 1.5;
+        containerMapBack = new MapContainer();
         stageBaseMap.addChild(containerMapBack);
-        containerMapFront = new Container();
+        containerMapFront = new MapContainer();
         stageMapFront.addChild(containerMapFront);
-        containerMapBack.scaleX = containerMapBack.scaleY = 1.5;
         //Graphics used to draw the grid
         var g = new Graphics();
         g.beginStroke(Graphics.getRGB(256,256,256));
@@ -240,6 +281,17 @@ GameMap = {
             }else return;
         }
         mozRequestAnimationFrame(callback);
+    },
+    _showLevels: function(){
+        for(var y = 0; y < GameMap.map.length; y++){
+            for(var x = 0; x < GameMap.map[y].length; x++){
+                var text = new Text(GameMap.map[y][x].level);
+                text.y = y*33+10;
+                text.x = x*33+24;
+                containerMapFront.addChild(text);
+            }
+        }
+        stageMapFront.update();
     },
     map: [],
     tmxMap: null,

@@ -5,6 +5,7 @@ html{
 }
 
 body{
+    color: rgb(256, 128, 0);
     font: 34px 'SilkscreenExpandedBold', Arial, sans-serif;
     background: -moz-linear-gradient(to top, rgb(0,0,0), rgb(0, 0, 64),
         rgb(0, 0, 64));
@@ -25,6 +26,12 @@ div{
 
 canvas{
     position: absolute;
+}
+
+p{
+    margin: 0 auto;
+    display: block;
+    width: 15%;
 }
 
 button{
@@ -51,7 +58,7 @@ button:hover{
 }
 
 #dGame{
-    margin: 0px auto;
+    padding: 0px;
 }
 
 @font-face {
