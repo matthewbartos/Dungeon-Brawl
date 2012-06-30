@@ -164,19 +164,24 @@ GameMap = {
                     }
                     if(!firstgrid) return;
                     for(j in i.data){
+                        var action = actions[i.data[j] - firstgrid];
                         x = Math.floor(j / i.width);
                         y = j % i.width
                         if(!GameMap.map[x]) GameMap.map[x] = [];
                         if(!GameMap.map[x][y]){
                             GameMap.map[x][y] = {};
                         }
-                        GameMap.map[x][y].action = actions[i.data[j] - firstgrid];
+                        if(action === 'spawn'){
+                            GameMap._spawnPoints.push(GameMap.map[x][y]);
+                        }
+                        GameMap.map[x][y].action = action;
                     }
                     objUsed = true;
                 }
             });
             if(!levUsed) throw "Leveles layer not used";
             if(!objUsed) throw "Objects layer not used";
+            if(GameMap._spawnPoints.length === 0) throw "No spawn ponts declared";
             if(GameMap.onParsed) GameMap.onParsed();
         }
     },
@@ -266,6 +271,11 @@ GameMap = {
         y = -containerMapBack.y - y*33 + canvasMapBase.height/2 - 32;
         return {x: x, y:y}
     },
+    /**
+     * Moves the map with a fluid motion
+     * @param {Number} x Coord x
+     * @param {Number} y Coord y
+     */
     moveToTile: function(x,y){
         var i = 1;
         var time = 80;
@@ -282,6 +292,9 @@ GameMap = {
         }
         mozRequestAnimationFrame(callback);
     },
+    /**
+     * Shows levels of each tile in its top right corner, for debug
+     */
     _showLevels: function(){
         for(var y = 0; y < GameMap.map.length; y++){
             for(var x = 0; x < GameMap.map[y].length; x++){
@@ -293,13 +306,33 @@ GameMap = {
         }
         stageMapFront.update();
     },
+    getASpawnPoint: function(){
+        return GameMap._spawnPoints[Math.floor(
+                Math.random()*GameMap._spawnPoints.length
+            )];
+    },
     map: [],
     tmxMap: null,
-    onParsed: null
+    onParsed: null,
+    _spawnPoints: []
 }
 
-
+/**
+ * Creates the stages used with EaselJS
+ */
 function initializeStages(){
     stageBaseMap = new Stage(canvasMapBase);
     stageMapFront = new Stage(canvasMapFront);
+}
+
+/**
+ * The player object
+ */
+
+function Player(){
+    
+}
+
+Player.prototype.spawn = function(){
+    var spawnPoint = GameMap.getASpawnPoint();
 }
