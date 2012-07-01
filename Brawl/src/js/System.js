@@ -65,32 +65,34 @@ GameMap = {
                     var img = new Image();
                     //needs change
                     img.src = "graphics" + i.image.substring(11,i.image.length);
-                    //cutting the image
-                    var index = parseInt(i.firstgid); //(SIC)
-                    var canvas = document.createElement('canvas');
-                    var context = canvas.getContext('2d');
-                    canvas.width = canvas.height = 32;
-                    for(var y = 0; y < i.imageheight/32; y++){
-                        w:
-                        for(var x = 0; x < i.imagewidth/32; x++){
-                            if(!used[index]){
+                    img.addEventListener('load', function(){
+                        //cutting the image
+                        var index = parseInt(i.firstgid); //(SIC)
+                        var canvas = document.createElement('canvas');
+                        var context = canvas.getContext('2d');
+                        canvas.width = canvas.height = 32;
+                        for(var y = 0; y < i.imageheight/32; y++){
+                            w:
+                            for(var x = 0; x < i.imagewidth/32; x++){
+                                if(!used[index]){
+                                    ++index;
+                                    continue w;
+                                }
+                                canvas.width = canvas.height = 32;
+                                context.drawImage(img, x * 32, y * 32, 32, 32, 0, 0,
+                                    canvas.width, canvas.height);
+                                var imgTemp = new Image();
+                                imgTemp.src = canvas.toDataURL();
+                                imgTemp.onload = function(){
+                                    ++loadedCount;
+                                    //checking if all images are loaded
+                                    if(loadedCount === usedCount) _continueMapParse2();
+                                }
+                                imageArray[index] = imgTemp;
                                 ++index;
-                                continue w;
                             }
-                            canvas.width = canvas.height = 32;
-                            context.drawImage(img, x * 32, y * 32, 32, 32, 0, 0,
-                                canvas.width, canvas.height);
-                            var imgTemp = new Image();
-                            imgTemp.src = canvas.toDataURL();
-                            imgTemp.onload = function(){
-                                ++loadedCount;
-                                //checking if all images are loaded
-                                if(loadedCount === usedCount) _continueMapParse2();
-                            }
-                            imageArray[index] = imgTemp;
-                            ++index;
                         }
-                    }
+                    }, true);
                 }
             });
 
@@ -290,6 +292,9 @@ function initializeStages(){
     stageBaseMap = new Stage(canvasMapBase);
     stageMapFront = new Stage(canvasMapFront);
     stagePlayer = new Stage(canvasPlayer);
+    stageBaseMap.scaleX = stageBaseMap.scaleY = stageMapFront.scaleX = 
+        stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 1.5;
+    
 }
 
 /**

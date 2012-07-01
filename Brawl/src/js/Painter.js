@@ -6,7 +6,7 @@ Painter = {
     loadImages: function(){
         var playerSpritesheetData = {
             images: ["graphics/maleWalk.png"],
-            frames: {width: 64, height: 64},
+            frames: {width: 64, height: 64, regX: 16, regY:32},
             animations: {
                 stand: 18
             }
@@ -20,12 +20,9 @@ Painter = {
         if(!GameMap.tmxMap) throw "no map parsed";
         var map = GameMap.map;
         //declaring the containers for easy movement of the map
-        var MapContainer = function(){}
-        MapContainer.prototype = new Container();
-        MapContainer.prototype.scaleY = MapContainer.prototype.scaleX = 1.5;
-        containerMapBack = new MapContainer();
+        containerMapBack = new Container();
         stageBaseMap.addChild(containerMapBack);
-        containerMapFront = new MapContainer();
+        containerMapFront = new Container();
         stageMapFront.addChild(containerMapFront);
         //Graphics used to draw the grid
         var g = new Graphics();
@@ -38,21 +35,21 @@ Painter = {
                     btm.y = y*33;
                     btm.x = x*33;
                     containerMapBack.addChild(btm);
-                    delete map[y][x].image;
+                    //delete map[y][x].image;
                 }
                 if(map[y][x].decImage){
                     btm = new Bitmap(map[y][x].decImage);
                     btm.y = y*33;
                     btm.x = x*33;
                     containerMapBack.addChild(btm);
-                    delete map[y][x].decImage;
+                    //delete map[y][x].decImage;
                 }
                 if(map[y][x].decFrontImage){
                     btm = new Bitmap(map[y][x].decFrontImage);
                     btm.y = y*33;
                     btm.x = x*33;
                     containerMapFront.addChild(btm);
-                    delete map[y][x].decFrontImage;
+                    //delete map[y][x].decFrontImage;
                 }
                 if(y == 0) g.moveTo(x*33, 0).lineTo(x*33, GameMap.tmxMap.height*33);
             }
@@ -72,7 +69,6 @@ Painter = {
  */
 function PlayerImage(){
     this.bitmap = new BitmapAnimation(Painter.playerImage);
-    this.bitmap.scaleX = this.bitmap.scaleY = 1.5;
     this.bitmap.gotoAndStop("stand");
     stagePlayer.addChild(this.bitmap);
 }
@@ -83,7 +79,7 @@ function PlayerImage(){
  * @param {Number} y Coord y
  */
 PlayerImage.prototype.placeAt = function(x,y){
-    this.bitmap.x = x*49.5-23;
-    this.bitmap.y = y*49.5-48;
+    this.bitmap.x = x*33;
+    this.bitmap.y = y*33;
     stagePlayer.update();
 }
