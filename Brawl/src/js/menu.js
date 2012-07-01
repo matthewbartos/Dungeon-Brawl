@@ -30,10 +30,7 @@ window.onload = function(){
             Math.floor(dGame.clientWidth);
         canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
             Math.floor(dGame.clientHeight);
-        GameMap.onParsed = function(){
-            GameMap.draw();
-        }
-        GameMap.parseMap("basic");
+        System.loadGame("basic");
     }
     Ticker.addListener({
         tick: function(){

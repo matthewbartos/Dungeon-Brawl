@@ -1,3 +1,20 @@
+System = {
+    /**
+     * Loads the map
+     * @param {String} map Name of the map to load
+     */
+    loadGame: function(map){
+        GameMap.onParsed = function(){
+            Painter.drawMap();
+            Painter.loadImages();
+            players.push(new Player());
+        }
+        GameMap.parseMap(map);
+    }
+}
+
+players = [];
+
 /**
  * Creates and hold the map
  */
@@ -90,36 +107,36 @@ GameMap = {
                 if(name.indexOf("tile") !== -1){
                     for(var j in i.data){
                         var image = imageArray[i.data[j]];
-                        var x = Math.floor(j / i.width);
-                        var y = j % i.width
+                        var y = Math.floor(j / i.width);
+                        var x = j % i.width
                         //init if not initialized
-                        if(!GameMap.map[x]) GameMap.map[x] = [];
-                        if(!GameMap.map[x][y]){
-                            GameMap.map[x][y] = {};
+                        if(!GameMap.map[y]) GameMap.map[y] = [];
+                        if(!GameMap.map[y][x]){
+                            GameMap.map[y][x] = {y:y,x:x};
                         }
-                        if(image) GameMap.map[x][y].image = image;
+                        if(image) GameMap.map[y][x].image = image;
                     }
                 }else if(name === "dec"){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
-                        x = Math.floor(j / i.width);
-                        y = j % i.width
-                        if(!GameMap.map[x]) GameMap.map[x] = [];
-                        if(!GameMap.map[x][y]){
-                            GameMap.map[x][y] = {};
+                        y = Math.floor(j / i.width);
+                        x = j % i.width
+                        if(!GameMap.map[y]) GameMap.map[y] = [];
+                        if(!GameMap.map[y][x]){
+                            GameMap.map[y][x] = {y:y,x:x};
                         }
-                        if(image) GameMap.map[x][y].decImage = image;
+                        if(image) GameMap.map[y][x].decImage = image;
                     }
                 }else if(name.indexOf("dec") !== -1){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
-                        x = Math.floor(j / i.width);
-                        y = j % i.width
-                        if(!GameMap.map[x]) GameMap.map[x] = [];
-                        if(!GameMap.map[x][y]){
-                            GameMap.map[x][y] = {};
+                        y = Math.floor(j / i.width);
+                        x = j % i.width
+                        if(!GameMap.map[y]) GameMap.map[y] = [];
+                        if(!GameMap.map[y][x]){
+                            GameMap.map[y][x] = {y:y,x:x};
                         }
-                        if(image) GameMap.map[x][y].decFrontImage = image;
+                        if(image) GameMap.map[y][x].decFrontImage = image;
                     }
                 }else if(name === "lev"){
                     var firstgrid = 0;
@@ -133,16 +150,16 @@ GameMap = {
                     for(j in i.data){
                         //because 0 - 1, 1 - 1.5, 2 - 2 and so on
                         var level = (i.data[j] - firstgrid) / 2 + 1;
-                        x = Math.floor(j / i.width);
-                        y = j % i.width
-                        if(!GameMap.map[x]) GameMap.map[x] = [];
-                        if(!GameMap.map[x][y]){
-                            GameMap.map[x][y] = {};
+                        y = Math.floor(j / i.width);
+                        x = j % i.width
+                        if(!GameMap.map[y]) GameMap.map[y] = [];
+                        if(!GameMap.map[y][x]){
+                            GameMap.map[y][x] = {y:y,x:x};
                         }
-                        if(level >= 0 ) GameMap.map[x][y].level = level;
+                        if(level >= 0 ) GameMap.map[y][x].level = level;
                     }
                     levUsed = true;
-                }else if(name === "obj"){
+                }else if(name.indexOf("obj") !== -1){
                     var actions = ['walk',                    //0
                                     'jump',                   //1
                                     'fall right',             //2
@@ -165,77 +182,26 @@ GameMap = {
                     if(!firstgrid) return;
                     for(j in i.data){
                         var action = actions[i.data[j] - firstgrid];
-                        x = Math.floor(j / i.width);
-                        y = j % i.width
-                        if(!GameMap.map[x]) GameMap.map[x] = [];
-                        if(!GameMap.map[x][y]){
-                            GameMap.map[x][y] = {};
+                        y = Math.floor(j / i.width);
+                        x = j % i.width
+                        if(!GameMap.map[y]) GameMap.map[y] = [];
+                        if(!GameMap.map[y][x]){
+                            GameMap.map[y][x] = {y:y,x:x};
                         }
                         if(action === 'spawn'){
-                            GameMap._spawnPoints.push(GameMap.map[x][y]);
+                            GameMap._spawnPoints.push(GameMap.map[y][x]);
+                        }else{
+                            GameMap.map[y][x].action = action;
                         }
-                        GameMap.map[x][y].action = action;
                     }
                     objUsed = true;
                 }
             });
             if(!levUsed) throw "Leveles layer not used";
             if(!objUsed) throw "Objects layer not used";
-            if(GameMap._spawnPoints.length === 0) throw "No spawn ponts declared";
+            if(GameMap._spawnPoints.length === 0) throw "No spawn points declared";
             if(GameMap.onParsed) GameMap.onParsed();
         }
-    },
-    /**
-     * Draws the map on the canvases
-     */
-    draw: function(){
-        if(!this.tmxMap) throw "no map parsed";
-        var map = this.map;
-        //declaring the containers for easy movement of the map
-        var MapContainer = function(){}
-        MapContainer.prototype = new Container();
-        MapContainer.prototype.scaleY = MapContainer.prototype.scaleX = 1.5;
-        containerMapBack = new MapContainer();
-        stageBaseMap.addChild(containerMapBack);
-        containerMapFront = new MapContainer();
-        stageMapFront.addChild(containerMapFront);
-        //Graphics used to draw the grid
-        var g = new Graphics();
-        g.beginStroke(Graphics.getRGB(256,256,256));
-        for(var y = 0; y < map.length; y++){
-            g.moveTo(0, y*33).lineTo(this.tmxMap.width*33, y*33);
-            for(var x = 0; x <  map[y].length; x++){
-                if(map[y][x].image){
-                    var btm = new Bitmap(map[y][x].image);
-                    btm.y = y*33;
-                    btm.x = x*33;
-                    containerMapBack.addChild(btm);
-                    delete map[y][x].image;
-                }
-                if(map[y][x].decImage){
-                    btm = new Bitmap(map[y][x].decImage);
-                    btm.y = y*33;
-                    btm.x = x*33;
-                    containerMapBack.addChild(btm);
-                    delete map[y][x].decImage;
-                }
-                if(map[y][x].decFrontImage){
-                    btm = new Bitmap(map[y][x].decFrontImage);
-                    btm.y = y*33;
-                    btm.x = x*33;
-                    containerMapBack.addChild(btm);
-                    delete map[y][x].decFrontImage;
-                }
-                if(y == 0) g.moveTo(x*33, 0).lineTo(x*33, this.tmxMap.height*33);
-            }
-        }
-        //drawing the final lines of the grid
-        g.moveTo(0, y*33).lineTo(this.tmxMap.width*33, y*33).moveTo(x*33, 0)
-            .lineTo(x*33, this.tmxMap.height*33);
-        containerMapBack.addChild(new Shape(g));
-        stageMapFront.update();
-        stageBaseMap.update();
-        console.timeEnd("map load");
     },
     /**
      * Moves the map to the specified coordinates
@@ -323,16 +289,23 @@ GameMap = {
 function initializeStages(){
     stageBaseMap = new Stage(canvasMapBase);
     stageMapFront = new Stage(canvasMapFront);
+    stagePlayer = new Stage(canvasPlayer);
 }
 
 /**
- * The player object
+ * The player object, constructor automatically spawns it
  */
-
 function Player(){
-    
+    this.playerImage = new PlayerImage();
+    this.spawn();
 }
 
+/**
+ * Gets a random spawn point from GameMap and places the player image there
+ */
 Player.prototype.spawn = function(){
     var spawnPoint = GameMap.getASpawnPoint();
+    this.x = spawnPoint.x;
+    this.y = spawnPoint.y;
+    this.playerImage.placeAt(spawnPoint.x, spawnPoint.y);
 }
