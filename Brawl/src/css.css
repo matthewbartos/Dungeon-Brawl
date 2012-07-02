@@ -26,6 +26,10 @@ div{
 
 canvas{
     position: absolute;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges; 
+    image-rendering:-webkit-optimize-contrast;
+    -ms-interpolation-mode:nearest-neighbor;
 }
 
 p{
@@ -66,7 +70,7 @@ button:hover{
 }
 
 #canvasPlayer{
-    z-index: 3;
+    z-index: 1;
 }
 
 #canvasMapFront{

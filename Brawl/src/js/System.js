@@ -255,10 +255,10 @@ GameMap = {
             if(i < time){
                 GameMap.move(x*(time-i)*i/tet, y*(time-i)*i/tet);
                 ++i;
-                mozRequestAnimationFrame(callback);
+                requestAnimationFrame(callback);
             }else return;
         }
-        mozRequestAnimationFrame(callback);
+        requestAnimationFrame(callback);
     },
     /**
      * Shows levels of each tile in its top right corner, for debug
@@ -293,7 +293,7 @@ function initializeStages(){
     stageMapFront = new Stage(canvasMapFront);
     stagePlayer = new Stage(canvasPlayer);
     stageBaseMap.scaleX = stageBaseMap.scaleY = stageMapFront.scaleX = 
-        stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 1.5;
+        stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 2;
     
 }
 
@@ -314,3 +314,13 @@ Player.prototype.spawn = function(){
     this.y = spawnPoint.y;
     this.playerImage.placeAt(spawnPoint.x, spawnPoint.y);
 }
+
+
+
+var requestAnimationFrame = window.requestAnimationFrame || 
+                            window.mozRequestAnimationFrame ||  
+                            window.webkitRequestAnimationFrame || 
+                            window.msRequestAnimationFrame || 
+                            function(x){
+                                setTimeout(function(){x()}, 30);
+                            };  
