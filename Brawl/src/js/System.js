@@ -219,13 +219,12 @@ GameMap = {
         });
     },
     moveTo: function(x,y){
-        containerMapBack.x = x;
-        containerMapBack.y = y;
-        containerMapFront.x = x;
-        containerMapFront.y = y;
+        containerGlobal.x = x;
+        containerGlobal.y = y;
         requestAnimationFrame(function(){
             stageBaseMap.update();
             stageMapFront.update();
+            stagePlayer.update();
         });
     },
     /**
