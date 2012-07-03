@@ -91,6 +91,13 @@ PlayerImage.prototype.placeAt = function(x,y){
     stagePlayer.update();
 }
 
+/**
+ * Sets the walking animation and moves the bitmap
+ * @param {Number} right By how many tiles to the right move. 1 is one tile, -1 is
+ * one tile to the left.
+ * @param {Number} down By how many tiles down move. 1 is one tile, -1 is
+ * one tile to the up.
+ */
 PlayerImage.prototype.walk = function(right,down){
     if(down > 0){
         this.bitmap.gotoAndPlay("walkDown")
@@ -103,27 +110,36 @@ PlayerImage.prototype.walk = function(right,down){
     }
     var that = this;
     var i = 0;
-    var animator = {
-        tick: function(){
-            if(i < 33){
-                that.bitmap.x = that.bitmap.x+right;
-                that.bitmap.y = that.bitmap.y+down;
-                ++i;
-                stagePlayer.update();
+    var speed = 3;
+    var maxIterations = Math.abs(right) > Math.abs(down) ? 
+        Math.abs(33*right)/speed : Math.abs(33*down)/speed;
+    if(right > 0) right = speed;
+    else if(right < 0) right = -speed;
+    if(down > 0) down = speed;
+    else if(down < 0) down = -speed;
+    console.log(right, down);
+    var previousTime = Date.now();
+    var callback = function(time){
+        if(time - previousTime > 50 && i < maxIterations){
+            that.bitmap.x = that.bitmap.x+right;
+            that.bitmap.y = that.bitmap.y+down;
+            ++i;
+            stagePlayer.update();
+            previousTime = Date.now();
+        }else if(i >= maxIterations){
+            if(that.bitmap.currentAnimation === "walkDown"){
+                that.bitmap.gotoAndStop("standDown");
+            }else if(that.bitmap.currentAnimation === "walkRight"){
+                that.bitmap.gotoAndStop("standRight");
+            }else if(that.bitmap.currentAnimation === "walkLeft"){
+                that.bitmap.gotoAndStop("standLeft");
             }else{
-                if(that.bitmap.currentAnimation === "walkDown"){
-                    that.bitmap.gotoAndStop("standDown");
-                }else if(that.bitmap.currentAnimation === "walkRight"){
-                    that.bitmap.gotoAndStop("standRight");
-                }else if(that.bitmap.currentAnimation === "walkLeft"){
-                    that.bitmap.gotoAndStop("standLeft");
-                }else{
-                    that.bitmap.gotoAndStop("standUp");
-                }
-                stagePlayer.update();
-                Ticker.removeListener(this);
+                that.bitmap.gotoAndStop("standUp");
             }
+            stagePlayer.update();
+            return;
         }
+        requestAnimationFrame(callback);
     }
-    Ticker.addListener(animator);
+    requestAnimationFrame(callback);
 }

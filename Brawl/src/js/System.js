@@ -7,13 +7,12 @@ System = {
         GameMap.onParsed = function(){
             Painter.drawMap();
             Painter.loadImages();
-            players.push(new Player());
+            System.players.push(new Player());
         }
         GameMap.parseMap(map);
-    }
+    },
+    players: []
 }
-
-players = [];
 
 /**
  * Creates and hold the map
@@ -307,12 +306,31 @@ function Player(){
 
 /**
  * Gets a random spawn point from GameMap and places the player image there
+ * @param {Number} [x] Coord x of where to spawn
+ * @param {Number} [y] Coord y of where to spawn
  */
-Player.prototype.spawn = function(){
-    var spawnPoint = GameMap.getASpawnPoint();
-    this.x = spawnPoint.x;
-    this.y = spawnPoint.y;
-    this.playerImage.placeAt(spawnPoint.x, spawnPoint.y);
+Player.prototype.spawn = function(x,y){
+    if(!x){
+        var spawnPoint = GameMap.getASpawnPoint();
+        x = spawnPoint.x;
+        y = spawnPoint.y;
+    }
+    this.x = x;
+    this.y = y;
+    this.playerImage.placeAt(x, y);
+}
+
+/**
+ * Moves the player by the numbers in parameters
+ * @param {Number} right By how many tiles to the right move. 1 is one tile, -1 is
+ * one tile to the left.
+ * @param {Number} down By how many tiles down move. 1 is one tile, -1 is
+ * one tile to the up.
+ */
+Player.prototype.walk = function(right,down){
+    this.x += right;
+    this.y += down;
+    this.playerImage.walk(right,down);
 }
 
 
@@ -320,7 +338,10 @@ Player.prototype.spawn = function(){
 var requestAnimationFrame = window.requestAnimationFrame || 
                             window.mozRequestAnimationFrame ||  
                             window.webkitRequestAnimationFrame || 
-                            window.msRequestAnimationFrame || 
-                            function(x){
-                                setTimeout(function(){x()}, 30);
-                            };  
+                            window.msRequestAnimationFrame;
+                        
+if(!requestAnimationFrame){
+    requestAnimationFrame = function(x){
+        setTimeout(function(){x(Date.now())}, 1);
+    };  
+}                        

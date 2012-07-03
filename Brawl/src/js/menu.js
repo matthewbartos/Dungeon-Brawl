@@ -32,11 +32,4 @@ window.onload = function(){
             Math.floor(dGame.clientHeight);
         System.loadGame("basic");
     }
-    Ticker.useRAF = true;
-    Ticker.setFPS(25);
-    Ticker.addListener({
-        tick: function(){
-            pFPS.innerHTML = "FPS: " + Math.round(Ticker.getMeasuredFPS());
-        }
-    });
 }
