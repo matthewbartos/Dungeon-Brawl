@@ -210,20 +210,23 @@ GameMap = {
      * @param {Number} y Vector y
      */
     move: function(x,y){
-        containerMapBack.x += x;
-        containerMapBack.y += y;
-        containerMapFront.x += x;
-        containerMapFront.y += y;
-        stageBaseMap.update();
-        stageMapFront.update();
+        containerGlobal.x += x;
+        containerGlobal.y += y;
+        requestAnimationFrame(function(){
+            stageBaseMap.update();
+            stageMapFront.update();
+            stagePlayer.update();
+        });
     },
     moveTo: function(x,y){
         containerMapBack.x = x;
         containerMapBack.y = y;
         containerMapFront.x = x;
         containerMapFront.y = y;
-        stageBaseMap.update();
-        stageMapFront.update();
+        requestAnimationFrame(function(){
+            stageBaseMap.update();
+            stageMapFront.update();
+        });
     },
     /**
      * Moves the map to specified (by coords) tile
@@ -242,8 +245,8 @@ GameMap = {
      * @returns {Object} Object with values x and y
      */
     getVectors: function(x,y){
-        x = -containerMapBack.x - x*33 + canvasMapBase.width/2 - 32;
-        y = -containerMapBack.y - y*33 + canvasMapBase.height/2 - 32;
+        x = -containerGlobal.x - x*33 + canvasMapBase.width/2 - 32;
+        y = -containerGlobal.y - y*33 + canvasMapBase.height/2 - 32;
         return {x: x, y:y}
     },
     /**
@@ -319,6 +322,10 @@ function initializeStages(){
     stageBaseMap.scaleX = stageBaseMap.scaleY = stageMapFront.scaleX = 
         stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 
         stageBackground.scaleX = stageBackground.scaleY = 2;
+    containerGlobal = new Container();
+    containerGlobal.addChild(stageBaseMap);
+    containerGlobal.addChild(stageMapFront);
+    containerGlobal.addChild(stagePlayer);
 }
 
 /**
@@ -367,6 +374,6 @@ var requestAnimationFrame = window.requestAnimationFrame ||
                         
 if(!requestAnimationFrame){
     requestAnimationFrame = function(x){
-        setTimeout(function(){x(Date.now())}, 1);
+        x(Date.now());
     };  
 }                        

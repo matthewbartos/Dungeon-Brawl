@@ -26,11 +26,6 @@ Painter = {
     drawMap: function(){
         if(!GameMap.tmxMap) throw "no map parsed";
         var map = GameMap.map;
-        //declaring the containers for easy movement of the map
-        containerMapBack = new Container();
-        stageBaseMap.addChild(containerMapBack);
-        containerMapFront = new Container();
-        stageMapFront.addChild(containerMapFront);
         //Graphics used to draw the grid
         var g = new Graphics();
         g.beginStroke(Graphics.getRGB(256,256,256));
@@ -41,21 +36,21 @@ Painter = {
                     var btm = new Bitmap(map[y][x].image);
                     btm.y = y*33;
                     btm.x = x*33;
-                    containerMapBack.addChild(btm);
+                    stageBaseMap.addChild(btm);
                     //delete map[y][x].image;
                 }
                 if(map[y][x].decImage){
                     btm = new Bitmap(map[y][x].decImage);
                     btm.y = y*33;
                     btm.x = x*33;
-                    containerMapBack.addChild(btm);
+                    stageBaseMap.addChild(btm);
                     //delete map[y][x].decImage;
                 }
                 if(map[y][x].decFrontImage){
                     btm = new Bitmap(map[y][x].decFrontImage);
                     btm.y = y*33;
                     btm.x = x*33;
-                    containerMapFront.addChild(btm);
+                    stageMapFront.addChild(btm);
                     //delete map[y][x].decFrontImage;
                 }
                 if(y == 0) g.moveTo(x*33, 0).lineTo(x*33, GameMap.tmxMap.height*33);
@@ -64,7 +59,7 @@ Painter = {
         //drawing the final lines of the grid
         g.moveTo(0, y*33).lineTo(GameMap.tmxMap.width*33, y*33).moveTo(x*33, 0)
             .lineTo(x*33, GameMap.tmxMap.height*33);
-        containerMapBack.addChild(new Shape(g));
+        stageBaseMap.addChild(new Shape(g));
         stageMapFront.update();
         stageBaseMap.update();
         console.timeEnd("map load");
