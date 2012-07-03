@@ -205,15 +205,23 @@ GameMap = {
         }
     },
     /**
-     * Moves the map to the specified coordinates
-     * @param {Number} x Coord x
-     * @param {Number} y Coord y
+     * Moves the map by the specified vector
+     * @param {Number} x Vector x
+     * @param {Number} y Vector y
      */
     move: function(x,y){
         containerMapBack.x += x;
         containerMapBack.y += y;
         containerMapFront.x += x;
         containerMapFront.y += y;
+        stageBaseMap.update();
+        stageMapFront.update();
+    },
+    moveTo: function(x,y){
+        containerMapBack.x = x;
+        containerMapBack.y = y;
+        containerMapFront.x = x;
+        containerMapFront.y = y;
         stageBaseMap.update();
         stageMapFront.update();
     },
@@ -288,12 +296,29 @@ GameMap = {
  * Creates the stages used with EaselJS
  */
 function initializeStages(){
+    var stageBackground = new Stage(canvasBackground);
+    var g = new Graphics();
+    g.beginFill(Graphics.getRGB(0,0,0,0.1));
+    g.beginStroke(Graphics.getRGB(0,0,0,0.1));
+    g.drawRect(0,0,canvasBackground.width, canvasBackground.height);
+    var s = new Shape(g);
+    stageBackground.addChild(s);
+    stageBackground.onPress = function(e){
+        var currentX = e.stageX;
+        var currentY = e.stageY;
+        e.onMouseMove = function(ev){
+            GameMap.move(ev.stageX - currentX, ev.stageY - currentY);
+            currentX = ev.stageX;
+            currentY = ev.stageY;
+        }
+    }
+    stageBackground.update();
     stageBaseMap = new Stage(canvasMapBase);
     stageMapFront = new Stage(canvasMapFront);
     stagePlayer = new Stage(canvasPlayer);
     stageBaseMap.scaleX = stageBaseMap.scaleY = stageMapFront.scaleX = 
-        stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 2;
-    
+        stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 
+        stageBackground.scaleX = stageBackground.scaleY = 2;
 }
 
 /**

@@ -9,6 +9,7 @@ window.onload = function(){
     dGame = document.getElementById("dGame");
     dMapChoose = document.getElementById("dMapChoose");
     pFPS = document.getElementById("pFPS");
+    canvasBackground = document.getElementById("canvasBackground");
     canvasMapBase = document.getElementById("canvasMapBase");
     canvasPlayer = document.getElementById("canvasPlayer");
     canvasMapFront = document.getElementById("canvasMapFront");
@@ -24,12 +25,12 @@ window.onload = function(){
     }
     document.getElementById("bMap1").onclick = function(){
         dMapChooseHide();
-        initializeStages();
         //setting up the width and height of canvases
         canvasMapBase.width = canvasPlayer.width = canvasMapFront.width =
-            Math.floor(dGame.clientWidth);
+            canvasBackground.width = Math.floor(dGame.clientWidth);
         canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
-            Math.floor(dGame.clientHeight);
+            canvasBackground.height = Math.floor(dGame.clientHeight);
+        initializeStages();
         System.loadGame("basic");
     }
 }

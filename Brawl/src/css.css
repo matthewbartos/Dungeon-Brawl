@@ -65,18 +65,6 @@ button:hover{
     padding: 0px;
 }
 
-#canvasMapBase{
-    z-index: 0;
-}
-
-#canvasPlayer{
-    z-index: 1;
-}
-
-#canvasMapFront{
-    z-index: 2;
-}
-
 @font-face {
     font-family: 'SilkscreenExpandedBold';
     src: url('fonts/slkscreb-webfont.woff') format('woff'),
