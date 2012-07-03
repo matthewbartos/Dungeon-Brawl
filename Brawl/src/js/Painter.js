@@ -8,7 +8,14 @@ Painter = {
             images: ["graphics/maleWalk.png"],
             frames: {width: 64, height: 64, regX: 16, regY:32},
             animations: {
-                stand: 18
+                standDown: 18,
+                standUp: 0,
+                standLeft: 9,
+                standRight: 27,
+                walkRight: [27,35],
+                walkLeft: [9,17],
+                walkUp: [0,8],
+                walkDown: [18,26]
             }
         }
         Painter.playerImage = new SpriteSheet(playerSpritesheetData);
@@ -69,7 +76,7 @@ Painter = {
  */
 function PlayerImage(){
     this.bitmap = new BitmapAnimation(Painter.playerImage);
-    this.bitmap.gotoAndStop("stand");
+    this.bitmap.gotoAndStop("standDown");
     stagePlayer.addChild(this.bitmap);
 }
 
@@ -82,4 +89,41 @@ PlayerImage.prototype.placeAt = function(x,y){
     this.bitmap.x = x*33;
     this.bitmap.y = y*33;
     stagePlayer.update();
+}
+
+PlayerImage.prototype.walk = function(right,down){
+    if(down > 0){
+        this.bitmap.gotoAndPlay("walkDown")
+    }else if(down <= 0 && right > 0){
+        this.bitmap.gotoAndPlay("walkRight");
+    }else if(down <= 0 && right < 0){
+        this.bitmap.gotoAndPlay("walkLeft");
+    }else{
+        this.bitmap.gotoAndPlay("walkUp");
+    }
+    var that = this;
+    var i = 0;
+    var animator = {
+        tick: function(){
+            if(i < 33){
+                that.bitmap.x = that.bitmap.x+right;
+                that.bitmap.y = that.bitmap.y+down;
+                ++i;
+                stagePlayer.update();
+            }else{
+                if(that.bitmap.currentAnimation === "walkDown"){
+                    that.bitmap.gotoAndStop("standDown");
+                }else if(that.bitmap.currentAnimation === "walkRight"){
+                    that.bitmap.gotoAndStop("standRight");
+                }else if(that.bitmap.currentAnimation === "walkLeft"){
+                    that.bitmap.gotoAndStop("standLeft");
+                }else{
+                    that.bitmap.gotoAndStop("standUp");
+                }
+                stagePlayer.update();
+                Ticker.removeListener(this);
+            }
+        }
+    }
+    Ticker.addListener(animator);
 }
