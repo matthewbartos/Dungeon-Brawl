@@ -19,6 +19,7 @@ Painter = {
             }
         }
         Painter.playerImage = new SpriteSheet(playerSpritesheetData);
+        
     },
     /**
      * Draws the map on the canvases
@@ -62,7 +63,29 @@ Painter = {
         stageBaseMap.addChild(new Shape(g));
         stageMapFront.update();
         stageBaseMap.update();
+        stageMarker.update();
         console.timeEnd("map load");
+    },
+    /**
+     * Creates invisible shapes
+     */
+    easelShapes: {
+        /**
+         * Creates a green square at given coords
+         * @param {Number} x Coord x
+         * @param {Number} y Coord y
+         */
+        createGreenSquare: function(x,y){
+            var g = new Graphics();
+            g.beginStroke(Graphics.getRGB(30,200,30)).setStrokeStyle(3)
+                .beginFill(Graphics.getRGB(30,200,30,0.1))
+                .drawRoundRect(0,0,33,33,2);
+            var s = new Shape(g);
+            s.x = x*33;
+            s.y = y*33;
+            s.alpha = 0;
+            return s;    
+        }
     }
 }
 

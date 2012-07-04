@@ -189,10 +189,20 @@ GameMap = {
                         if(!GameMap.map[y][x]){
                             GameMap.map[y][x] = {y:y,x:x};
                         }
+                        if(!action) continue;
                         if(action === 'spawn'){
                             GameMap._spawnPoints.push(GameMap.map[y][x]);
+                        }else if(action === 'item'){
+                            
                         }else{
                             GameMap.map[y][x].action = action;
+                            switch(action){
+                                case 'walk' : GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createGreenSquare(x,y);
+                                        stageMarker.addChild(
+                                            GameMap.map[y][x].marker);
+                                        break;
+                            }
                         }
                     }
                     objUsed = true;
@@ -216,8 +226,14 @@ GameMap = {
             stageBaseMap.update();
             stageMapFront.update();
             stagePlayer.update();
+            stageMarker.update();
         });
     },
+    /**
+     * Moves the map to the specified coordinates
+     * @param {Number} x Coord x
+     * @param {Number} y Coord y
+     */
     moveTo: function(x,y){
         containerGlobal.x = x;
         containerGlobal.y = y;
@@ -225,6 +241,7 @@ GameMap = {
             stageBaseMap.update();
             stageMapFront.update();
             stagePlayer.update();
+            stageMarker.update();
         });
     },
     /**
@@ -308,48 +325,17 @@ function initializeStages(){
     stageBackground.onPress = function(e){
         var currentX = e.stageX;
         var currentY = e.stageY;
-        var movedX = 0;
-        var movedY = 0;
-        var speedX = [0,0,0,0,0];
-        var speedY = [0,0,0,0,0];
-        var moved = false;
-        var interval = setInterval(function(){
-            speedX.push(movedX);
-            speedY.push(movedY);
-            movedX = movedY = 0;
-            speedX.shift();
-            speedY.shift();
-        }, 100);
         e.onMouseMove = function(ev){
             moved = true;
             var dirX = ev.stageX - currentX;
             var dirY = ev.stageY - currentY;
-            movedX += dirX;
-            movedY += dirY;
             GameMap.move(dirX, dirY);
             currentX = ev.stageX;
             currentY = ev.stageY;
         }
         e.onMouseUp = function(ev){
-            clearInterval(interval);
             if(moved){
-                var i = 1;
-                var finalSpeedX = 0;
-                var finalSpeedY = 0;
-                for(var j = 0; j < 5; j++){
-                    finalSpeedX += speedX[j];
-                    finalSpeedY += speedY[j];
-                }
-                var interval2 = setInterval(function(){
-                    var dirX = finalSpeedX/i/20;
-                    var dirY = finalSpeedY/i/20;
-                    if(Math.abs(dirX)*1000 < 1 && Math.abs(dirY)*1000 < 1){
-                        clearInterval(interval2);
-                        return;
-                    }
-                    GameMap.move(dirX, dirY);
-                    i += 1;
-                }, 25)
+                
             }else{
                 
             }
@@ -359,13 +345,14 @@ function initializeStages(){
     stageBaseMap = new Stage(canvasMapBase);
     stageMapFront = new Stage(canvasMapFront);
     stagePlayer = new Stage(canvasPlayer);
-    stageBaseMap.scaleX = stageBaseMap.scaleY = stageMapFront.scaleX = 
-        stageMapFront.scaleY = stagePlayer.scaleX = stagePlayer.scaleY = 
-        stageBackground.scaleX = stageBackground.scaleY = 2;
+    stageMarker = new Stage(canvasMarker);
     containerGlobal = new Container();
     containerGlobal.addChild(stageBaseMap);
     containerGlobal.addChild(stageMapFront);
     containerGlobal.addChild(stagePlayer);
+    containerGlobal.addChild(stageMarker);
+    containerGlobal.scaleX = containerGlobal.scaleY = stageBackground.scaleX =
+        stageBackground.scaleY = 2;
 }
 
 /**

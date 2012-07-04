@@ -13,6 +13,7 @@ window.onload = function(){
     canvasMapBase = document.getElementById("canvasMapBase");
     canvasPlayer = document.getElementById("canvasPlayer");
     canvasMapFront = document.getElementById("canvasMapFront");
+    canvasMarker = document.getElementById("canvasMarker");
     //function run everytime a map is chosen
     function dMapChooseHide(){
         dMapChoose.hidden = true;
@@ -27,9 +28,11 @@ window.onload = function(){
         dMapChooseHide();
         //setting up the width and height of canvases
         canvasMapBase.width = canvasPlayer.width = canvasMapFront.width =
-            canvasBackground.width = Math.floor(dGame.clientWidth);
+            canvasBackground.width = canvasMarker.width = 
+            Math.floor(dGame.clientWidth);
         canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
-            canvasBackground.height = Math.floor(dGame.clientHeight);
+            canvasBackground.height = canvasMarker.height = 
+            Math.floor(dGame.clientHeight);
         initializeStages();
         System.loadGame("basic");
     }
