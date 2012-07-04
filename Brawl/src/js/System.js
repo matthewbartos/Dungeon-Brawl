@@ -308,10 +308,51 @@ function initializeStages(){
     stageBackground.onPress = function(e){
         var currentX = e.stageX;
         var currentY = e.stageY;
+        var movedX = 0;
+        var movedY = 0;
+        var speedX = [0,0,0,0,0];
+        var speedY = [0,0,0,0,0];
+        var moved = false;
+        var interval = setInterval(function(){
+            speedX.push(movedX);
+            speedY.push(movedY);
+            movedX = movedY = 0;
+            speedX.shift();
+            speedY.shift();
+        }, 100);
         e.onMouseMove = function(ev){
-            GameMap.move(ev.stageX - currentX, ev.stageY - currentY);
+            moved = true;
+            var dirX = ev.stageX - currentX;
+            var dirY = ev.stageY - currentY;
+            movedX += dirX;
+            movedY += dirY;
+            GameMap.move(dirX, dirY);
             currentX = ev.stageX;
             currentY = ev.stageY;
+        }
+        e.onMouseUp = function(ev){
+            clearInterval(interval);
+            if(moved){
+                var i = 1;
+                var finalSpeedX = 0;
+                var finalSpeedY = 0;
+                for(var j = 0; j < 5; j++){
+                    finalSpeedX += speedX[j];
+                    finalSpeedY += speedY[j];
+                }
+                var interval2 = setInterval(function(){
+                    var dirX = finalSpeedX/i/20;
+                    var dirY = finalSpeedY/i/20;
+                    if(Math.abs(dirX)*1000 < 1 && Math.abs(dirY)*1000 < 1){
+                        clearInterval(interval2);
+                        return;
+                    }
+                    GameMap.move(dirX, dirY);
+                    i += 1;
+                }, 25)
+            }else{
+                
+            }
         }
     }
     stageBackground.update();
