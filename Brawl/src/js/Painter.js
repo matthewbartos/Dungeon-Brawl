@@ -138,7 +138,6 @@ PlayerImage.prototype.walk = function(right,down){
     else if(right < 0) right = -speed;
     if(down > 0) down = speed;
     else if(down < 0) down = -speed;
-    console.log(right, down);
     var previousTime = Date.now();
     var callback = function(time){
         if(time - previousTime > 50 && i < maxIterations){

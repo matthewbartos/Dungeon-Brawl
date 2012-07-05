@@ -10,8 +10,26 @@ System = {
             Game.players.push(new Player());
             Game.round();
         }
+        System.initializeStages();
+        Controller.initControls();
         GameMap.parseMap(map);
-    }
+    },
+    /**
+     * Creates the stages used with EaselJS
+     */
+    initializeStages: function(){
+        stageBaseMap = new Stage(canvasMapBase);
+        stageMapFront = new Stage(canvasMapFront);
+        stagePlayer = new Stage(canvasPlayer);
+        stageMarker = new Stage(canvasMarker);
+        containerGlobal = new Container();
+        containerGlobal.addChild(stageBaseMap);
+        containerGlobal.addChild(stageMapFront);
+        containerGlobal.addChild(stagePlayer);
+        containerGlobal.addChild(stageMarker);
+        containerGlobal.scaleX = containerGlobal.scaleY = System.scale;
+    },
+    scale: 2
 }
 
 /**
@@ -311,6 +329,10 @@ GameMap = {
                 Math.random()*GameMap._spawnPoints.length
             )];
     },
+    stageToGameMapCoords: function(x,y){
+        return {x: Math.floor((x - containerGlobal.x)/33/System.scale), 
+            y: Math.floor((y - containerGlobal.y)/33/System.scale)};
+    },
     map: [],
     tmxMap: null,
     onParsed: null,
@@ -331,27 +353,12 @@ Game = {
 }
 
 /**
- * Creates the stages used with EaselJS
- */
-function initializeStages(){
-    stageBaseMap = new Stage(canvasMapBase);
-    stageMapFront = new Stage(canvasMapFront);
-    stagePlayer = new Stage(canvasPlayer);
-    stageMarker = new Stage(canvasMarker);
-    containerGlobal = new Container();
-    containerGlobal.addChild(stageBaseMap);
-    containerGlobal.addChild(stageMapFront);
-    containerGlobal.addChild(stagePlayer);
-    containerGlobal.addChild(stageMarker);
-    containerGlobal.scaleX = containerGlobal.scaleY = 2;
-}
-
-/**
  * The player object, constructor automatically spawns it
  */
 function Player(){
     this.playerImage = new PlayerImage();
     this.spawn();
+    this.actionPoints = 3;
 }
 
 /**
@@ -384,6 +391,9 @@ Player.prototype.walk = function(right,down){
 }
 
 Player.prototype.takeTurn = function(){
+    stageMarker.children.forEach(function(i){
+        i.alpha = 0;
+    });
     var mark = GameMap.map[this.y-1][this.x-1].marker;
     if(mark) mark.alpha = 1;
     mark = GameMap.map[this.y][this.x-1].marker;
@@ -403,9 +413,23 @@ Player.prototype.takeTurn = function(){
     stageMarker.update();
 }
 
-Player.prototype.action = function(action, x, y){
-    switch(action){
-        case 'walk' : this.walk(x-this.x, y-this.y);
+Player.prototype.action = function(x, y){
+    if(typeof x === "object"){
+        y = x.y;
+        x = x.x;
+    }
+    var action = GameMap.map[y][x].action;
+    x = x - this.x;
+    y = y - this.y;
+    console.log(x,y);
+    if(x >= -1 && x <= 1 && y >= -1 && y <= 1){
+        switch(action){
+            case 'walk' :
+                --this.actionPoints;
+                this.walk(x, y);
+                if(this.actionPoints > 0) this.takeTurn();
+                break;
+        }
     }
 }
 

@@ -30,21 +30,6 @@ window.onload = function(){
             canvasMarker.width = Math.floor(dGame.clientWidth);
         canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
             canvasMarker.height = Math.floor(dGame.clientHeight);
-        initializeStages();
         System.loadGame("basic");
-    }
-    dGame.onmousedown = function(event){
-        var currentX = event.clientX - dGame.offsetLeft;
-        var currentY = event.clientY - dGame.offsetTop;
-        dGame.onmousemove = function(e){
-            var x = e.clientX - dGame.offsetLeft;
-            var y = e.clientY - dGame.offsetTop;
-            GameMap.move(x - currentX, y - currentY);
-            currentX = x;
-            currentY = y;
-        }
-        dGame.onmouseup = function(){
-            dGame.onmousemove = function(){};
-        }
     }
 }
