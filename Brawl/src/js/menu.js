@@ -9,7 +9,6 @@ window.onload = function(){
     dGame = document.getElementById("dGame");
     dMapChoose = document.getElementById("dMapChoose");
     pFPS = document.getElementById("pFPS");
-    canvasBackground = document.getElementById("canvasBackground");
     canvasMapBase = document.getElementById("canvasMapBase");
     canvasPlayer = document.getElementById("canvasPlayer");
     canvasMapFront = document.getElementById("canvasMapFront");
@@ -27,13 +26,25 @@ window.onload = function(){
     document.getElementById("bMap1").onclick = function(){
         dMapChooseHide();
         //setting up the width and height of canvases
-        canvasMapBase.width = canvasPlayer.width = canvasMapFront.width =
-            canvasBackground.width = canvasMarker.width = 
-            Math.floor(dGame.clientWidth);
+        canvasMapBase.width = canvasPlayer.width = canvasMapFront.width = 
+            canvasMarker.width = Math.floor(dGame.clientWidth);
         canvasMapBase.height = canvasPlayer.height = canvasMapFront.height =
-            canvasBackground.height = canvasMarker.height = 
-            Math.floor(dGame.clientHeight);
+            canvasMarker.height = Math.floor(dGame.clientHeight);
         initializeStages();
         System.loadGame("basic");
+    }
+    dGame.onmousedown = function(event){
+        var currentX = event.clientX - dGame.offsetLeft;
+        var currentY = event.clientY - dGame.offsetTop;
+        dGame.onmousemove = function(e){
+            var x = e.clientX - dGame.offsetLeft;
+            var y = e.clientY - dGame.offsetTop;
+            GameMap.move(x - currentX, y - currentY);
+            currentX = x;
+            currentY = y;
+        }
+        dGame.onmouseup = function(){
+            dGame.onmousemove = function(){};
+        }
     }
 }

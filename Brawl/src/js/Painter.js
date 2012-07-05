@@ -70,21 +70,24 @@ Painter = {
      * Creates invisible shapes
      */
     easelShapes: {
+        createSquare: function(r,g,b,x,y){
+            var gr = new Graphics();
+            gr.beginStroke(Graphics.getRGB(r,g,b)).setStrokeStyle(3)
+                .beginFill(Graphics.getRGB(r,g,b,0.1))
+                .drawRoundRect(0,0,33,33,2);
+            var s = new Shape(gr);
+            s.x = x*33;
+            s.y = y*33;
+            s.alpha = 0;
+            return s; 
+        },
         /**
          * Creates a green square at given coords
          * @param {Number} x Coord x
          * @param {Number} y Coord y
          */
         createGreenSquare: function(x,y){
-            var g = new Graphics();
-            g.beginStroke(Graphics.getRGB(30,200,30)).setStrokeStyle(3)
-                .beginFill(Graphics.getRGB(30,200,30,0.1))
-                .drawRoundRect(0,0,33,33,2);
-            var s = new Shape(g);
-            s.x = x*33;
-            s.y = y*33;
-            s.alpha = 0;
-            return s;    
+            return this.createSquare(30,200,30,x,y);    
         }
     }
 }

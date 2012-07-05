@@ -7,11 +7,11 @@ System = {
         GameMap.onParsed = function(){
             Painter.drawMap();
             Painter.loadImages();
-            System.players.push(new Player());
+            Game.players.push(new Player());
+            Game.round();
         }
         GameMap.parseMap(map);
-    },
-    players: []
+    }
 }
 
 /**
@@ -199,6 +199,12 @@ GameMap = {
                             switch(action){
                                 case 'walk' : GameMap.map[y][x].marker = 
                                         Painter.easelShapes.createGreenSquare(x,y);
+                                        var mark = GameMap.map[y][x].marker;
+                                        mark.onClick = function(){
+                                            console.log("lol");
+                                            Game.currentPlayer.action('walk',
+                                                x,y);
+                                        }
                                         stageMarker.addChild(
                                             GameMap.map[y][x].marker);
                                         break;
@@ -311,37 +317,23 @@ GameMap = {
     _spawnPoints: []
 }
 
+Game = {
+    round: function(){
+        var player = this.players[this.currentPlayerIndex];
+        this.currentPlayer = player;
+        player.takeTurn();
+        ++this.currentPlayerIndex;
+    },
+    players: [],
+    /** @type Player */
+    currentPlayer: null,
+    currentPlayerIndex: 0
+}
+
 /**
  * Creates the stages used with EaselJS
  */
 function initializeStages(){
-    var stageBackground = new Stage(canvasBackground);
-    var g = new Graphics();
-    g.beginFill(Graphics.getRGB(0,0,0,0.1));
-    g.beginStroke(Graphics.getRGB(0,0,0,0.1));
-    g.drawRect(0,0,canvasBackground.width, canvasBackground.height);
-    var s = new Shape(g);
-    stageBackground.addChild(s);
-    stageBackground.onPress = function(e){
-        var currentX = e.stageX;
-        var currentY = e.stageY;
-        e.onMouseMove = function(ev){
-            moved = true;
-            var dirX = ev.stageX - currentX;
-            var dirY = ev.stageY - currentY;
-            GameMap.move(dirX, dirY);
-            currentX = ev.stageX;
-            currentY = ev.stageY;
-        }
-        e.onMouseUp = function(ev){
-            if(moved){
-                
-            }else{
-                
-            }
-        }
-    }
-    stageBackground.update();
     stageBaseMap = new Stage(canvasMapBase);
     stageMapFront = new Stage(canvasMapFront);
     stagePlayer = new Stage(canvasPlayer);
@@ -351,8 +343,7 @@ function initializeStages(){
     containerGlobal.addChild(stageMapFront);
     containerGlobal.addChild(stagePlayer);
     containerGlobal.addChild(stageMarker);
-    containerGlobal.scaleX = containerGlobal.scaleY = stageBackground.scaleX =
-        stageBackground.scaleY = 2;
+    containerGlobal.scaleX = containerGlobal.scaleY = 2;
 }
 
 /**
@@ -392,7 +383,31 @@ Player.prototype.walk = function(right,down){
     this.playerImage.walk(right,down);
 }
 
+Player.prototype.takeTurn = function(){
+    var mark = GameMap.map[this.y-1][this.x-1].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y][this.x-1].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y+1][this.x-1].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y-1][this.x].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y+1][this.x].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y-1][this.x+1].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y][this.x+1].marker;
+    if(mark) mark.alpha = 1;
+    mark = GameMap.map[this.y+1][this.x+1].marker;
+    if(mark) mark.alpha = 1;
+    stageMarker.update();
+}
 
+Player.prototype.action = function(action, x, y){
+    switch(action){
+        case 'walk' : this.walk(x-this.x, y-this.y);
+    }
+}
 
 var requestAnimationFrame = window.requestAnimationFrame || 
                             window.mozRequestAnimationFrame ||  
@@ -403,4 +418,4 @@ if(!requestAnimationFrame){
     requestAnimationFrame = function(x){
         x(Date.now());
     };  
-}                        
+}
