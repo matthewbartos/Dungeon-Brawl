@@ -324,11 +324,21 @@ GameMap = {
         }
         stageMapFront.update();
     },
+    /**
+     * Returns one of the spawn points
+     * @return {mapObject} A random spawn point
+     */
     getASpawnPoint: function(){
         return GameMap._spawnPoints[Math.floor(
                 Math.random()*GameMap._spawnPoints.length
             )];
     },
+    /**
+     * Converts stage coords to GameMap coords
+     * @param {number} x Stage coord x
+     * @param {number} y Stage coord y
+     * @return {object} Object with x and y properties
+     */
     stageToGameMapCoords: function(x,y){
         return {x: Math.floor((x - containerGlobal.x)/33/System.scale), 
             y: Math.floor((y - containerGlobal.y)/33/System.scale)};
@@ -340,11 +350,17 @@ GameMap = {
 }
 
 Game = {
+    /**
+     * Cycles through players and waits for their input
+     */
     round: function(){
         var player = this.players[this.currentPlayerIndex];
         this.currentPlayer = player;
         player.takeTurn();
         ++this.currentPlayerIndex;
+        if(this.currentPlayerIndex === this.players.length){
+            this.currentPlayerIndex = 0;
+        }
     },
     players: [],
     /** @type Player */
@@ -387,11 +403,19 @@ Player.prototype.spawn = function(x,y){
     this.playerImage.placeAt(x, y);
 }
 
+/**
+ * Sets the x coord of the player, and also it's shadow coord
+ * @param {number} x Coord x
+ */
 Player.prototype.setX = function(x){
     this.x = x;
     this.shadowX = x;
 }
 
+/**
+ * Sets the y coord of the player, and also it's shadow coord
+ * @param {number} y Coord y
+ */
 Player.prototype.setY = function(y){
     this.y = y;
     this.shadowY = y;
@@ -426,6 +450,11 @@ Player.prototype.placeShadowAt = function(x,y,dir){
     this.shadowY = y;
 }
 
+/**
+ * Adds an action to be executed after all action points are used.
+ * @param {string} type Type of action to be made, possible are: 'action'
+ * @param {object[]} properties Array of values to be passed to functions 
+ */
 Player.prototype.addAction = function(type, properties){
     switch(type){
         case 'walk' :
@@ -435,6 +464,10 @@ Player.prototype.addAction = function(type, properties){
     }
 }
 
+/**
+ * Playes the saved actions, then moves the map to the player's coords and 
+ * continues the round.
+ */
 Player.prototype.playAction = function(){
     if(this.actions.length > 0){
         var action = this.actions.shift();
@@ -445,9 +478,14 @@ Player.prototype.playAction = function(){
         }
     }else{
         GameMap.moveToTile(this.x, this.y);
+        Game.round();
     }
 }
 
+/**
+ * Function used to prepare the game to show all possible actions the player can
+ * take.
+ */
 Player.prototype.takeTurn = function(){
     stageMarker.children.forEach(function(i){
         i.alpha = 0;
@@ -475,6 +513,12 @@ Player.prototype.takeTurn = function(){
     stageMarker.update();
 }
 
+/**
+ * Used by controller to indicate, that player pressed the stage. Interprets the
+ * coordinates into actions and saves them for later.
+ * @param {number} x X GameMap coord
+ * @param {number} y Y GameMap coord
+ */
 Player.prototype.action = function(x, y){
     if(this.actionPoints > 0){
         if(typeof x === "object"){

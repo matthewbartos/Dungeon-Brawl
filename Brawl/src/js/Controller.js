@@ -1,3 +1,4 @@
+/** Object used for setting up controls and input */
 Controller = {
     initControls: function(){
         dGame.onmousedown = function(event){

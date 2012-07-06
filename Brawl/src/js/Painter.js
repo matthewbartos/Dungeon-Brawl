@@ -1,6 +1,6 @@
 
 /**
- * Loads and paint images
+ * Loads and paints images
  */
 Painter = {
     loadImages: function(){
@@ -118,6 +118,12 @@ PlayerImage.prototype.placeAt = function(x,y){
     stagePlayer.update();
 }
 
+/**
+ * Places the shadow at specified coords, in the direction given
+ * @param {number} x Coord x
+ * @param {number} y Coord y
+ * @param {string} dir Direction to face ('down', 'up', 'left', 'right')
+ */
 PlayerImage.prototype.placeShadowAt = function(x,y,dir){
     switch(dir){
         case 'down' :
@@ -183,4 +189,7 @@ PlayerImage.prototype.walk = function(right,down){
     requestAnimationFrame(callback);
 }
 
+/**
+ * Event listener, what to do when animation ends
+ */
 PlayerImage.prototype.onAnimationEnd = function(){}
