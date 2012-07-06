@@ -215,17 +215,18 @@ GameMap = {
                         }else{
                             GameMap.map[y][x].action = action;
                             switch(action){
-                                case 'walk' : GameMap.map[y][x].marker = 
+                                case 'walk' : 
+                                    GameMap.map[y][x].marker = 
                                         Painter.easelShapes.createGreenSquare(x,y);
-                                        var mark = GameMap.map[y][x].marker;
-                                        mark.onClick = function(){
-                                            console.log("lol");
-                                            Game.currentPlayer.action('walk',
-                                                x,y);
-                                        }
-                                        stageMarker.addChild(
-                                            GameMap.map[y][x].marker);
-                                        break;
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
+                                    break;
+                                case 'walk on uneven terrain' :
+                                    GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createGreenSquare(x,y);
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
+                                    break;
                             }
                         }
                     }
@@ -378,9 +379,10 @@ function Player(){
     this.y = 0;
     this.shadowX = this.x;
     this.shadowY = this.y;
+    this.level = 0;
     this.actions = [];
     this.spawn();
-    this.actionPoints = 3;
+    this.actionPoints = 0;
 }
 
 /**
@@ -398,27 +400,22 @@ Player.prototype.spawn = function(x,y){
         y = x.y;
         x = x.x;
     }
-    this.setX(x);
-    this.setY(y);
+    this.setCoords(x,y);
     this.playerImage.placeAt(x, y);
 }
 
 /**
  * Sets the x coord of the player, and also it's shadow coord
  * @param {number} x Coord x
- */
-Player.prototype.setX = function(x){
-    this.x = x;
-    this.shadowX = x;
-}
-
-/**
- * Sets the y coord of the player, and also it's shadow coord
  * @param {number} y Coord y
  */
-Player.prototype.setY = function(y){
+Player.prototype.setCoords = function(x, y){
+    this.x = x;
+    this.shadowX = x;
     this.y = y;
     this.shadowY = y;
+    this.level = GameMap.map[y][x].level;
+    console.log(this.level)
 }
 
 /**
@@ -433,8 +430,7 @@ Player.prototype.walk = function(right,down){
         down = right.down;
         right = right.right;
     }
-    this.setX(this.x + right);
-    this.setY(this.y + down);
+    this.setCoords(this.x + right, this.y + down);
     this.playerImage.walk(right,down);
 }
 
@@ -483,7 +479,7 @@ Player.prototype.playAction = function(){
 }
 
 Player.prototype.startRound = function(){
-    this.actionPoints = 3;
+    this.actionPoints += 3;
     this.takeTurn();
 }
 
@@ -532,12 +528,32 @@ Player.prototype.action = function(x, y){
             y = x.y;
             x = x.x;
         }
-        var action = GameMap.map[y][x].action;
+        var mapObj = GameMap.map[y][x];
+        var action = mapObj.action;
         x = x - this.shadowX;
         y = y - this.shadowY;
         if(x >= -1 && x <= 1 && y >= -1 && y <= 1){
+            this.actionPoints -= Math.abs(this.level - mapObj.level);
             switch(action){
                 case 'walk' :
+                    --this.actionPoints;
+                    if(y > 0){
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                            'down');
+                    }else if(y <= 0 && x > 0){
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y,
+                            'right');
+                    }else if(y <= 0 && x < 0){
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                            'left');
+                    }else{
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                            'up');
+                    }
+                    this.addAction('walk', [x,y]);
+                    this.takeTurn();
+                    break;
+                case 'walk on uneven terrain' :
                     --this.actionPoints;
                     if(y > 0){
                         this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
