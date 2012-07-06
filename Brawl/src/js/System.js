@@ -356,7 +356,7 @@ Game = {
     round: function(){
         var player = this.players[this.currentPlayerIndex];
         this.currentPlayer = player;
-        player.takeTurn();
+        player.startRound();
         ++this.currentPlayerIndex;
         if(this.currentPlayerIndex === this.players.length){
             this.currentPlayerIndex = 0;
@@ -482,6 +482,11 @@ Player.prototype.playAction = function(){
     }
 }
 
+Player.prototype.startRound = function(){
+    this.actionPoints = 3;
+    this.takeTurn();
+}
+
 /**
  * Function used to prepare the game to show all possible actions the player can
  * take.
@@ -491,6 +496,8 @@ Player.prototype.takeTurn = function(){
         i.alpha = 0;
     });
     if(this.actionPoints <= 0){
+        this.playerImage.hideShadows();
+        stageMarker.update();
         this.playAction();
         return;
     }
@@ -532,8 +539,19 @@ Player.prototype.action = function(x, y){
             switch(action){
                 case 'walk' :
                     --this.actionPoints;
-                    this.placeShadowAt(this.shadowX + x, 
-                        this.shadowY + y, 'down');
+                    if(y > 0){
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                            'down');
+                    }else if(y <= 0 && x > 0){
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y,
+                            'right');
+                    }else if(y <= 0 && x < 0){
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                            'left');
+                    }else{
+                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                            'up');
+                    }
                     this.addAction('walk', [x,y]);
                     this.takeTurn();
                     break;

@@ -97,14 +97,38 @@ Painter = {
  */
 function PlayerImage(){
     this.bitmap = new BitmapAnimation(Painter.playerImage);
-    this.bitmapShadowDown = new Bitmap(SpriteSheetUtils.extractFrame(this.bitmap.spriteSheet, 18));
     var colorFilter = new ColorFilter(0,0,0,0.5);
-    this.bitmapShadowDown.filters = [colorFilter];
-    this.bitmapShadowDown.cache(0,0,64,64);
-    this.bitmapShadowDown.alpha = 0;
+    this.shadows = {
+        init: function(parent){
+            this.down = new Bitmap(
+                SpriteSheetUtils.extractFrame(parent.bitmap.spriteSheet, 18));
+            this.up = new Bitmap(
+                SpriteSheetUtils.extractFrame(parent.bitmap.spriteSheet, 0));
+            this.left = new Bitmap(
+                SpriteSheetUtils.extractFrame(parent.bitmap.spriteSheet, 9));
+            this.right = new Bitmap(
+                SpriteSheetUtils.extractFrame(parent.bitmap.spriteSheet, 27));
+            this.down.filters = this.left.filters = this.right.filters =
+                this.up.filters = [colorFilter];
+            this.down.cache(0,0,64,64);
+            this.left.cache(0,0,64,64);
+            this.right.cache(0,0,64,64);
+            this.up.cache(0,0,64,64);
+            this.down.alpha = this.left.alpha = this.right.alpha = this.up.alpha
+                = 0;
+        },
+        down: null,
+        up: null,
+        left: null,
+        right: null
+    }
+    this.shadows.init(this);
     this.bitmap.gotoAndStop("standDown");
     stagePlayer.addChild(this.bitmap);
-    stagePlayer.addChild(this.bitmapShadowDown);
+    stagePlayer.addChild(this.shadows.up);
+    stagePlayer.addChild(this.shadows.down);
+    stagePlayer.addChild(this.shadows.left);
+    stagePlayer.addChild(this.shadows.right);
 }
 
 /**
@@ -125,14 +149,53 @@ PlayerImage.prototype.placeAt = function(x,y){
  * @param {string} dir Direction to face ('down', 'up', 'left', 'right')
  */
 PlayerImage.prototype.placeShadowAt = function(x,y,dir){
+    this.hideShadows();
+    var shadow;
     switch(dir){
         case 'down' :
-            this.bitmapShadowDown.x = x*33-16;
-            this.bitmapShadowDown.y = y*33-32;
-            this.bitmapShadowDown.alpha = 1;
-            this.bitmapShadowDown.updateCache();
+            shadow = this.shadows.down;
+            shadow.x = x*33-16;
+            shadow.y = y*33-32;
+            shadow.alpha = 1;
+            shadow.updateCache();
             stagePlayer.update();
+            break;
+        case 'up' :
+            shadow = this.shadows.up;
+            shadow.x = x*33-16;
+            shadow.y = y*33-32;
+            shadow.alpha = 1;
+            shadow.updateCache();
+            stagePlayer.update();
+            break;
+        case 'left' :
+            shadow = this.shadows.left;
+            shadow.x = x*33-16;
+            shadow.y = y*33-32;
+            shadow.alpha = 1;
+            shadow.updateCache();
+            stagePlayer.update();
+            break;
+        case 'right' :
+            shadow = this.shadows.right;
+            shadow.x = x*33-16;
+            shadow.y = y*33-32;
+            shadow.alpha = 1;
+            shadow.updateCache();
+            stagePlayer.update();
+            break;
     }
+}
+
+PlayerImage.prototype.hideShadows = function(){
+    for(var i in this.shadows){
+        var shadow = this.shadows[i]
+        if(typeof shadow === 'object'){
+            shadow.alpha = 0;
+            shadow.updateCache();
+        }
+    }
+    stagePlayer.update();
 }
 
 /**
