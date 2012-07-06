@@ -119,6 +119,12 @@ GameMap = {
          * objects
          */
         function _continueMapParse2(){
+            for(var y = 0; y < map.height; y++){
+                GameMap.map[y] = [];
+                for(var x = 0; x < map.width; x++){
+                    GameMap.map[y][x] = new MapObject(x, y);
+                }
+            }
             var objUsed = false;
             var levUsed = false;
             map.layers.forEach(function(i){
@@ -127,35 +133,24 @@ GameMap = {
                     for(var j in i.data){
                         var image = imageArray[i.data[j]];
                         var y = Math.floor(j / i.width);
-                        var x = j % i.width
-                        //init if not initialized
-                        if(!GameMap.map[y]) GameMap.map[y] = [];
-                        if(!GameMap.map[y][x]){
-                            GameMap.map[y][x] = {y:y,x:x};
-                        }
+                        var x = j % i.width;
                         if(image) GameMap.map[y][x].image = image;
                     }
-                }else if(name === "dec"){
+                }else if(name.indexOf("decB") !== -1){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
                         y = Math.floor(j / i.width);
-                        x = j % i.width
-                        if(!GameMap.map[y]) GameMap.map[y] = [];
-                        if(!GameMap.map[y][x]){
-                            GameMap.map[y][x] = {y:y,x:x};
+                        x = j % i.width;
+                        if(image) {
+                            GameMap.map[y][x].imageDecB.push(image);
                         }
-                        if(image) GameMap.map[y][x].decImage = image;
                     }
-                }else if(name.indexOf("dec") !== -1){
+                }else if(name.indexOf("decF") !== -1){
                     for(j in i.data){
                         image = imageArray[i.data[j]];
                         y = Math.floor(j / i.width);
-                        x = j % i.width
-                        if(!GameMap.map[y]) GameMap.map[y] = [];
-                        if(!GameMap.map[y][x]){
-                            GameMap.map[y][x] = {y:y,x:x};
-                        }
-                        if(image) GameMap.map[y][x].decFrontImage = image;
+                        x = j % i.width;
+                        if(image) GameMap.map[y][x].imageDecF = image;
                     }
                 }else if(name === "lev"){
                     var firstgrid = 0;
@@ -170,11 +165,7 @@ GameMap = {
                         //because 0 - 1, 1 - 1.5, 2 - 2 and so on
                         var level = (i.data[j] - firstgrid) / 2 + 1;
                         y = Math.floor(j / i.width);
-                        x = j % i.width
-                        if(!GameMap.map[y]) GameMap.map[y] = [];
-                        if(!GameMap.map[y][x]){
-                            GameMap.map[y][x] = {y:y,x:x};
-                        }
+                        x = j % i.width;
                         if(level >= 0 ) GameMap.map[y][x].level = level;
                     }
                     levUsed = true;
@@ -202,11 +193,7 @@ GameMap = {
                     for(j in i.data){
                         var action = actions[i.data[j] - firstgrid];
                         y = Math.floor(j / i.width);
-                        x = j % i.width
-                        if(!GameMap.map[y]) GameMap.map[y] = [];
-                        if(!GameMap.map[y][x]){
-                            GameMap.map[y][x] = {y:y,x:x};
-                        }
+                        x = j % i.width;
                         if(!action) continue;
                         if(action === 'spawn'){
                             GameMap._spawnPoints.push(GameMap.map[y][x]);
@@ -348,6 +335,16 @@ GameMap = {
     tmxMap: null,
     onParsed: null,
     _spawnPoints: []
+}
+
+MapObject = function(x,y){
+    this.image = null;
+    this.x = x;
+    this.y = y;
+    this.action = null;
+    this.imageDecB = [];
+    this.imageDecF = [];
+    this.level = 0;
 }
 
 Game = {

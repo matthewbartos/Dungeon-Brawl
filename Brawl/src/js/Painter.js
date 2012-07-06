@@ -40,19 +40,25 @@ Painter = {
                     stageBaseMap.addChild(btm);
                     //delete map[y][x].image;
                 }
-                if(map[y][x].decImage){
-                    btm = new Bitmap(map[y][x].decImage);
-                    btm.y = y*33;
-                    btm.x = x*33;
-                    stageBaseMap.addChild(btm);
-                    //delete map[y][x].decImage;
+                var images = map[y][x].imageDecB;
+                if(images.length > 0){
+                    for(var j in images){
+                        btm = new Bitmap(images[j]);
+                        btm.y = y*33;
+                        btm.x = x*33;
+                        stageBaseMap.addChild(btm);
+                        //delete map[y][x].decImage;
+                    }
                 }
-                if(map[y][x].decFrontImage){
-                    btm = new Bitmap(map[y][x].decFrontImage);
-                    btm.y = y*33;
-                    btm.x = x*33;
-                    stageMapFront.addChild(btm);
-                    //delete map[y][x].decFrontImage;
+                images = map[y][x].imageDecF;
+                if(images.length > 0){
+                    for(j in images){
+                        btm = new Bitmap(images[j]);
+                        btm.y = y*33;
+                        btm.x = x*33;
+                        stageBaseMap.addChild(btm);
+                        //delete map[y][x].decImage;
+                    }
                 }
                 if(y == 0) g.moveTo(x*33, 0).lineTo(x*33, GameMap.tmxMap.height*33);
             }
