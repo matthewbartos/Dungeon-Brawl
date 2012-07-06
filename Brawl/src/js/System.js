@@ -1,7 +1,7 @@
 System = {
     /**
      * Loads the map
-     * @param {String} map Name of the map to load
+     * @param {string} map Name of the map to load
      */
     loadGame: function(map){
         GameMap.onParsed = function(){
@@ -38,7 +38,7 @@ System = {
 GameMap = {
     /**
      * Converts a JSON map to a game readable JSON object
-     * @param {Object} map Map to parse
+     * @param {string} map Name of the map to parse
      */
     parseMap: function(map){
         console.time("map load");
@@ -240,8 +240,8 @@ GameMap = {
     },
     /**
      * Moves the map by the specified vector
-     * @param {Number} x Vector x
-     * @param {Number} y Vector y
+     * @param {number} x Vector x
+     * @param {number} y Vector y
      */
     move: function(x,y){
         containerGlobal.x += x;
@@ -255,8 +255,8 @@ GameMap = {
     },
     /**
      * Moves the map to the specified coordinates
-     * @param {Number} x Coord x
-     * @param {Number} y Coord y
+     * @param {number} x Coord x
+     * @param {number} y Coord y
      */
     moveTo: function(x,y){
         containerGlobal.x = x;
@@ -270,8 +270,8 @@ GameMap = {
     },
     /**
      * Moves the map to specified (by coords) tile
-     * @param {Number} x Coord x
-     * @param {Number} y Coord y
+     * @param {number} x Coord x
+     * @param {number} y Coord y
      */
     showTile: function(x,y){
         var vec = GameMap.getVectors(x,y);
@@ -280,13 +280,13 @@ GameMap = {
     /**
      * Shows by how much the map should be moved to show the tile (specified
      * by coords) in the middle of the map
-     * @param {Number} x Coord x
-     * @param {Number} y Coord y
-     * @returns {Object} Object with values x and y
+     * @param {number} x Coord x
+     * @param {number} y Coord y
+     * @returns {object} Object with values x and y
      */
     getVectors: function(x,y){
-        x = -containerGlobal.x - x*33 + canvasMapBase.width/2 - 32;
-        y = -containerGlobal.y - y*33 + canvasMapBase.height/2 - 32;
+        x = -containerGlobal.x - x*33*System.scale + canvasMapBase.width/2 - 32;
+        y = -containerGlobal.y - y*33*System.scale + canvasMapBase.height/2 - 32;
         return {x: x, y:y}
     },
     /**
@@ -356,79 +356,144 @@ Game = {
  * The player object, constructor automatically spawns it
  */
 function Player(){
+    /** @type PlayerImage */
     this.playerImage = new PlayerImage();
+    this.x = 0;
+    this.y = 0;
+    this.shadowX = this.x;
+    this.shadowY = this.y;
+    this.actions = [];
     this.spawn();
     this.actionPoints = 3;
 }
 
 /**
  * Gets a random spawn point from GameMap and places the player image there
- * @param {Number} [x] Coord x of where to spawn
- * @param {Number} [y] Coord y of where to spawn
+ * @param {number||object} [x] Coord x of where to spawn, or object with x and y 
+ * properties
+ * @param {number} [y] Coord y of where to spawn
  */
 Player.prototype.spawn = function(x,y){
     if(!x){
         var spawnPoint = GameMap.getASpawnPoint();
         x = spawnPoint.x;
         y = spawnPoint.y;
+    }else if(typeof x === "object"){
+        y = x.y;
+        x = x.x;
     }
-    this.x = x;
-    this.y = y;
+    this.setX(x);
+    this.setY(y);
     this.playerImage.placeAt(x, y);
+}
+
+Player.prototype.setX = function(x){
+    this.x = x;
+    this.shadowX = x;
+}
+
+Player.prototype.setY = function(y){
+    this.y = y;
+    this.shadowY = y;
 }
 
 /**
  * Moves the player by the numbers in parameters
- * @param {Number} right By how many tiles to the right move. 1 is one tile, -1 is
- * one tile to the left.
- * @param {Number} down By how many tiles down move. 1 is one tile, -1 is
+ * @param {number||object} right By how many tiles to the right move. 1 is one 
+ * tile, -1 is one tile to the left. Or object with right and down properties.
+ * @param {number} [down] By how many tiles down move. 1 is one tile, -1 is
  * one tile to the up.
  */
 Player.prototype.walk = function(right,down){
-    this.x += right;
-    this.y += down;
+    if(typeof right === "object"){
+        down = right.down;
+        right = right.right;
+    }
+    this.setX(this.x + right);
+    this.setY(this.y + down);
     this.playerImage.walk(right,down);
+}
+
+/**
+ * Places the shadow at given coords with given direction fo looking
+ * @param {number||object} x Coord x or object with x, y, and dir properties.
+ * @param {number} [y] Coord y
+ * @param {string} [dir] Direction the shadow should be facing
+ */
+Player.prototype.placeShadowAt = function(x,y,dir){
+    this.playerImage.placeShadowAt(x,y,dir);
+    this.shadowX = x;
+    this.shadowY = y;
+}
+
+Player.prototype.addAction = function(type, properties){
+    switch(type){
+        case 'walk' :
+            this.actions.push({actionType:type, 
+                props:{right:properties[0], down:properties[1]}});
+            break;
+    }
+}
+
+Player.prototype.playAction = function(){
+    if(this.actions.length > 0){
+        var action = this.actions.shift();
+        this[action.actionType](action.props);
+        var player = this;
+        this.playerImage.onAnimationEnd = function(){
+            player.playAction();
+        }
+    }else{
+        GameMap.moveToTile(this.x, this.y);
+    }
 }
 
 Player.prototype.takeTurn = function(){
     stageMarker.children.forEach(function(i){
         i.alpha = 0;
     });
-    var mark = GameMap.map[this.y-1][this.x-1].marker;
+    if(this.actionPoints <= 0){
+        this.playAction();
+        return;
+    }
+    var mark = GameMap.map[this.shadowY-1][this.shadowX-1].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y][this.x-1].marker;
+    mark = GameMap.map[this.shadowY][this.shadowX-1].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y+1][this.x-1].marker;
+    mark = GameMap.map[this.shadowY+1][this.shadowX-1].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y-1][this.x].marker;
+    mark = GameMap.map[this.shadowY-1][this.shadowX].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y+1][this.x].marker;
+    mark = GameMap.map[this.shadowY+1][this.shadowX].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y-1][this.x+1].marker;
+    mark = GameMap.map[this.shadowY-1][this.shadowX+1].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y][this.x+1].marker;
+    mark = GameMap.map[this.shadowY][this.shadowX+1].marker;
     if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.y+1][this.x+1].marker;
+    mark = GameMap.map[this.shadowY+1][this.shadowX+1].marker;
     if(mark) mark.alpha = 1;
     stageMarker.update();
 }
 
 Player.prototype.action = function(x, y){
-    if(typeof x === "object"){
-        y = x.y;
-        x = x.x;
-    }
-    var action = GameMap.map[y][x].action;
-    x = x - this.x;
-    y = y - this.y;
-    console.log(x,y);
-    if(x >= -1 && x <= 1 && y >= -1 && y <= 1){
-        switch(action){
-            case 'walk' :
-                --this.actionPoints;
-                this.walk(x, y);
-                if(this.actionPoints > 0) this.takeTurn();
-                break;
+    if(this.actionPoints > 0){
+        if(typeof x === "object"){
+            y = x.y;
+            x = x.x;
+        }
+        var action = GameMap.map[y][x].action;
+        x = x - this.shadowX;
+        y = y - this.shadowY;
+        if(x >= -1 && x <= 1 && y >= -1 && y <= 1){
+            switch(action){
+                case 'walk' :
+                    --this.actionPoints;
+                    this.placeShadowAt(this.shadowX + x, 
+                        this.shadowY + y, 'down');
+                    this.addAction('walk', [x,y]);
+                    this.takeTurn();
+                    break;
+            }
         }
     }
 }

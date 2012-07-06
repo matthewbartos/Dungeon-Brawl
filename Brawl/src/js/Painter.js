@@ -97,8 +97,14 @@ Painter = {
  */
 function PlayerImage(){
     this.bitmap = new BitmapAnimation(Painter.playerImage);
+    this.bitmapShadowDown = new Bitmap(SpriteSheetUtils.extractFrame(this.bitmap.spriteSheet, 18));
+    var colorFilter = new ColorFilter(0,0,0,0.5);
+    this.bitmapShadowDown.filters = [colorFilter];
+    this.bitmapShadowDown.cache(0,0,64,64);
+    this.bitmapShadowDown.alpha = 0;
     this.bitmap.gotoAndStop("standDown");
     stagePlayer.addChild(this.bitmap);
+    stagePlayer.addChild(this.bitmapShadowDown);
 }
 
 /**
@@ -110,6 +116,17 @@ PlayerImage.prototype.placeAt = function(x,y){
     this.bitmap.x = x*33;
     this.bitmap.y = y*33;
     stagePlayer.update();
+}
+
+PlayerImage.prototype.placeShadowAt = function(x,y,dir){
+    switch(dir){
+        case 'down' :
+            this.bitmapShadowDown.x = x*33-16;
+            this.bitmapShadowDown.y = y*33-32;
+            this.bitmapShadowDown.alpha = 1;
+            this.bitmapShadowDown.updateCache();
+            stagePlayer.update();
+    }
 }
 
 /**
@@ -139,6 +156,7 @@ PlayerImage.prototype.walk = function(right,down){
     if(down > 0) down = speed;
     else if(down < 0) down = -speed;
     var previousTime = Date.now();
+    var playerImage = this;
     var callback = function(time){
         if(time - previousTime > 50 && i < maxIterations){
             that.bitmap.x = that.bitmap.x+right;
@@ -157,9 +175,12 @@ PlayerImage.prototype.walk = function(right,down){
                 that.bitmap.gotoAndStop("standUp");
             }
             stagePlayer.update();
+            playerImage.onAnimationEnd();
             return;
         }
         requestAnimationFrame(callback);
     }
     requestAnimationFrame(callback);
 }
+
+PlayerImage.prototype.onAnimationEnd = function(){}
