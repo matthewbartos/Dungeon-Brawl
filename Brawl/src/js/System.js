@@ -355,11 +355,12 @@ Game = {
         if(this.currentPlayerIndex === this.players.length){
             this.playAllActions();
             this.currentPlayerIndex = 0;
+        }else{
+            var player = this.players[this.currentPlayerIndex];
+            this.currentPlayer = player;
+            player.startRound();
+            ++this.currentPlayerIndex;
         }
-        var player = this.players[this.currentPlayerIndex];
-        this.currentPlayer = player;
-        player.startRound();
-        ++this.currentPlayerIndex;
     },
     playAllActions: function(){
         var actionsPlayed = 0;
@@ -371,15 +372,17 @@ Game = {
                 }
             }
             ++actionsPlayed;
-            if(actionsPlayed < 3){
-                var interval = setInterval(function(){
-                    if(Game.animated.length === Game.players.length){
-                        clearInterval(interval);
-                        Game.animated = [];
+            var interval = setInterval(function(){
+                if(Game.animated.length === Game.players.length){
+                    clearInterval(interval);
+                    Game.animated = [];
+                    if(actionsPlayed < 3){
                         play();
+                    }else{
+                        Game.round();
                     }
-                },500)
-            }
+                }
+            },500);
         }
         play();
     },
