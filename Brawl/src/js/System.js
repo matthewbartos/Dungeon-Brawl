@@ -7,7 +7,7 @@ System = {
         GameMap.onParsed = function(){
             Painter.drawMap();
             Painter.loadImages();
-            Game.players.push(new Player());
+            new Player();
             Game.round();
         }
         System.initializeStages();
@@ -352,14 +352,38 @@ Game = {
      * Cycles through players and waits for their input
      */
     round: function(){
+        if(this.currentPlayerIndex === this.players.length){
+            this.playAllActions();
+            this.currentPlayerIndex = 0;
+        }
         var player = this.players[this.currentPlayerIndex];
         this.currentPlayer = player;
         player.startRound();
         ++this.currentPlayerIndex;
-        if(this.currentPlayerIndex === this.players.length){
-            this.currentPlayerIndex = 0;
-        }
     },
+    playAllActions: function(){
+        var actionsPlayed = 0;
+        function play(){
+            for(var i in Game.players){
+                Game.players[i].playAction();
+                Game.players[i].playerImage.onAnimationEnd = function(){
+                    Game.animated.push(true);
+                }
+            }
+            ++actionsPlayed;
+            if(actionsPlayed < 3){
+                var interval = setInterval(function(){
+                    if(Game.animated.length === Game.players.length){
+                        clearInterval(interval);
+                        Game.animated = [];
+                        play();
+                    }
+                },500)
+            }
+        }
+        play();
+    },
+    animated: [],
     players: [],
     /** @type Player */
     currentPlayer: null,
@@ -370,6 +394,7 @@ Game = {
  * The player object, constructor automatically spawns it
  */
 function Player(){
+    Game.players.push(this);
     /** @type PlayerImage */
     this.playerImage = new PlayerImage();
     this.x = 0;
@@ -412,7 +437,6 @@ Player.prototype.setCoords = function(x, y){
     this.y = y;
     this.shadowY = y;
     this.level = GameMap.map[y][x].level;
-    console.log(this.level)
 }
 
 /**
@@ -465,13 +489,6 @@ Player.prototype.playAction = function(){
     if(this.actions.length > 0){
         var action = this.actions.shift();
         this[action.actionType](action.props);
-        var player = this;
-        this.playerImage.onAnimationEnd = function(){
-            player.playAction();
-        }
-    }else{
-        GameMap.moveToTile(this.x, this.y);
-        Game.round();
     }
 }
 
@@ -491,7 +508,7 @@ Player.prototype.takeTurn = function(){
     if(this.actionPoints <= 0){
         this.playerImage.hideShadows();
         stageMarker.update();
-        this.playAction();
+        Game.round();
         return;
     }
     var mark = GameMap.map[this.shadowY-1][this.shadowX-1].marker;
