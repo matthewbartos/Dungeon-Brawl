@@ -171,7 +171,7 @@ GameMap = {
                     levUsed = true;
                 }else if(name.indexOf("obj") !== -1){
                     var actions = ['walk',                    //0
-                                    'jump',                   //1
+                                    'fall',                   //1
                                     'fall right',             //2
                                     'climb ladder',           //3
                                     'fall left',              //4
@@ -214,6 +214,35 @@ GameMap = {
                                     stageMarker.addChild(
                                         GameMap.map[y][x].marker);
                                     break;
+                                case 'fall' :
+                                    GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createBlueSquare(x,y);
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
+                                    break;
+                                case 'fall right' :
+                                    GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createBlueSquare(x,y);
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
+                                    break;
+                                case 'fall left' :
+                                    GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createBlueSquare(x,y);
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
+                                    break;
+                                case 'die' :
+                                    GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createBlackSquare(x,y);
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
+                                    break;
+                                case 'fall to death' :
+                                    GameMap.map[y][x].marker = 
+                                        Painter.easelShapes.createBlackSquare(x,y);
+                                    stageMarker.addChild(
+                                        GameMap.map[y][x].marker);
                             }
                         }
                     }
@@ -307,7 +336,7 @@ GameMap = {
                 var text = new Text(GameMap.map[y][x].level);
                 text.y = y*33+10;
                 text.x = x*33+24;
-                containerMapFront.addChild(text);
+                stageMapFront.addChild(text);
             }
         }
         stageMapFront.update();
@@ -347,6 +376,15 @@ MapObject = function(x,y){
     this.level = 0;
 }
 
+MapObject.prototype.hasCharacter = function(){
+        for(var i in Game.players){
+            i = Game.players[i];
+            if(i.x === this.x && i.y === this.y){
+                return true;
+            }
+        }
+        return false;
+    }
 Game = {
     /**
      * Cycles through players and waits for their input
@@ -382,7 +420,7 @@ Game = {
                         Game.round();
                     }
                 }
-            },500);
+            },200);
         }
         play();
     },
@@ -439,7 +477,13 @@ Player.prototype.setCoords = function(x, y){
     this.shadowX = x;
     this.y = y;
     this.shadowY = y;
-    this.level = GameMap.map[y][x].level;
+    if(Math.floor(x) === x && Math.floor(y) === y){
+        this.level = GameMap.map[y][x].level;
+    }else{
+        var level1 = GameMap.map[Math.floor(y)][Math.floor(x)].level;
+        var level2 = GameMap.map[Math.ceil(y)][Math.ceil(x)].level;
+        this.level = (level1 + level2)/2;
+    }
 }
 
 /**
@@ -456,6 +500,10 @@ Player.prototype.walk = function(right,down){
     }
     this.setCoords(this.x + right, this.y + down);
     this.playerImage.walk(right,down);
+}
+
+Player.prototype.wait = function(){
+    this.playerImage.onAnimationEnd();
 }
 
 /**
@@ -480,6 +528,9 @@ Player.prototype.addAction = function(type, properties){
         case 'walk' :
             this.actions.push({actionType:type, 
                 props:{right:properties[0], down:properties[1]}});
+            break;
+        case 'wait' :
+            this.actions.push({actionType:type, props:null});
             break;
     }
 }
@@ -514,22 +565,47 @@ Player.prototype.takeTurn = function(){
         Game.round();
         return;
     }
-    var mark = GameMap.map[this.shadowY-1][this.shadowX-1].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY][this.shadowX-1].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY+1][this.shadowX-1].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY-1][this.shadowX].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY+1][this.shadowX].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY-1][this.shadowX+1].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY][this.shadowX+1].marker;
-    if(mark) mark.alpha = 1;
-    mark = GameMap.map[this.shadowY+1][this.shadowX+1].marker;
-    if(mark) mark.alpha = 1;
+    var y = this.shadowY-1;
+    var x = this.shadowX-1;
+    var mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    ++y;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    ++y;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    ++x;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    y -= 2;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    ++x;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    ++y;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    ++y;
+    mapObj = GameMap.map[y][x];
+    if(mapObj.hasCharacter()) stageMarker.addChild(
+        Painter.easelShapes.createRedSquare(x,y,true));
+    else if(mapObj.marker) mapObj.marker.alpha = 1;
     stageMarker.update();
 }
 
@@ -550,7 +626,11 @@ Player.prototype.action = function(x, y){
         x = x - this.shadowX;
         y = y - this.shadowY;
         if(x >= -1 && x <= 1 && y >= -1 && y <= 1){
-            this.actionPoints -= Math.abs(this.level - mapObj.level);
+            var levelDifference = Math.floor(Math.abs(this.level - mapObj.level));
+            if(levelDifference){
+                this.actionPoints -= levelDifference;
+                this.addAction('wait');
+            }
             switch(action){
                 case 'walk' :
                     --this.actionPoints;

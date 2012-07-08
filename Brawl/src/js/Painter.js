@@ -74,17 +74,18 @@ Painter = {
     },
     /**
      * Creates invisible shapes
+     * @namespace
      */
     easelShapes: {
-        createSquare: function(r,g,b,x,y){
+        _createSquare: function(r,g,b,x,y,visible){
             var gr = new Graphics();
             gr.beginStroke(Graphics.getRGB(r,g,b)).setStrokeStyle(3)
                 .beginFill(Graphics.getRGB(r,g,b,0.1))
-                .drawRoundRect(0,0,33,33,2);
+                .drawRoundRect(2,2,29,29,2);
             var s = new Shape(gr);
             s.x = x*33;
             s.y = y*33;
-            s.alpha = 0;
+            if(!visible) s.alpha = 0;
             return s; 
         },
         /**
@@ -93,7 +94,16 @@ Painter = {
          * @param {Number} y Coord y
          */
         createGreenSquare: function(x,y){
-            return this.createSquare(30,200,30,x,y);    
+            return this._createSquare(30,200,30,x,y);    
+        },
+        createBlackSquare: function(x,y){
+            return this._createSquare(0,0,0,x,y);
+        },
+        createBlueSquare: function(x,y){
+            return this._createSquare(30,30,200,x,y);
+        },
+        createRedSquare: function(x,y, visible){
+            return this._createSquare(200,30,30,x,y,visible);
         }
     }
 }
