@@ -360,6 +360,13 @@ GameMap = {
         return {x: Math.floor((x - containerGlobal.x)/33/System.scale), 
             y: Math.floor((y - containerGlobal.y)/33/System.scale)};
     },
+    /**
+     * Gets the level of surface based on coords. If coords are not rounded, it
+     * takes an avarage level between two tiles.
+     * @param {number} x Coord x
+     * @param {number} y Coord y
+     * @return {number} Level of the surface
+     */
     getLevelOf: function(x,y){
         var level;
         if(Math.floor(x) === x && Math.floor(y) === y){
@@ -377,6 +384,10 @@ GameMap = {
     _spawnPoints: []
 }
 
+/**
+ * Objects used in GameMap.map
+ * @contructor
+ */
 MapObject = function(x,y){
     this.image = null;
     this.x = x;
@@ -387,6 +398,11 @@ MapObject = function(x,y){
     this.level = 0;
 }
 
+/**
+ * Checks if there is a character standing on this tile
+ * @return {number} Index of the player that stands on this tile from
+ * Game.players array, false if there's no one.
+ */
 MapObject.prototype.hasCharacter = function(){
         for(var i in Game.players){
             i = Game.players[i];
@@ -411,6 +427,9 @@ Game = {
             ++this.currentPlayerIndex;
         }
     },
+    /**
+     * Plays the actions taken by players
+     */
     playAllActions: function(){
         var actionsPlayed = 0;
         function play(){
@@ -491,6 +510,10 @@ Player.prototype.setAttributes = function(hp, def){
 	this.def = def;
 }
 
+/**
+ * Sets the level of surface for both player and its shadow
+ * @param {number} level The level to set.
+ */
 Player.prototype.setLevel = function(level){
     this.level = level;
     this.shadowLevel = level;
@@ -525,6 +548,9 @@ Player.prototype.walk = function(right,down){
     this.playerImage.walk(right,down);
 }
 
+/**
+ * Do nothing for the turn.
+ */
 Player.prototype.wait = function(){
     this.playerImage.onAnimationEnd();
 }
@@ -563,6 +589,11 @@ Player.prototype.addAction = function(type, properties){
     }
 }
 
+/**
+ * Makes the shadow show the action taken.
+ * @param {number} index Index of the action to show from the Player.actions 
+ * array
+ */
 Player.prototype.shadowAction = function(index){
     var action = this.actions[index];
     switch(action.actionType){
@@ -597,8 +628,11 @@ Player.prototype.playAction = function(){
     }
 }
 
+/**
+ * Prepares the player to start the round.
+ */
 Player.prototype.startRound = function(){
-    GameMap.moveToTile(this.x, this.y);
+    GameMap.showTile(this.x, this.y);
     this.actionPoints += 3;
     for(var i in this.actions){
         this.shadowAction(i);
@@ -748,9 +782,7 @@ Player.prototype.attackMelee = function (player,dir){
     }
     this.playerImage.attackMelee(dir);
     var dmg = Math.floor(Math.random()*10); //temporary, for tests
-    if(dmg <= player.def){  //parry
-        console.log('Parry'); 
-    }else player.hitPts -= (dmg - player.def); //attack value is equal to substraction of damage and defense
+    player.dealDamage(dmg);
 }
 /**
 * Makes distance attack and deals damage to the opponent
@@ -775,6 +807,25 @@ Player.prototype.playerDistanceAttack = function() {
 		break;
 	default: console.log('Shot missed');
 	}
+}
+/**
+ * Deals damage to that player
+ * @param {number} dmg How much damage should be dealt
+ * @param {boolean} defence Whether to take defence into account
+ */
+Player.prototype.dealDamage = function(dmg, defence){
+    if(defence) dmg -= this.def;
+    this.hitPts -= dmg;
+    if(this.hitPts <= 0){
+        this.die();
+    }
+}
+
+/**
+ * Kills the character and makes the player pay the consequances
+ */
+Player.prototype.die = function(){
+    console.log("DEAD");
 }
 
 var requestAnimationFrame = window.requestAnimationFrame || 

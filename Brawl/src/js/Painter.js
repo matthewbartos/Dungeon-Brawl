@@ -5,7 +5,8 @@
 Painter = {
     loadImages: function(){
         var playerSpritesheetData = {
-            images: ["graphics/maleWalk.png", "graphics/maleSlash.png"],
+            images: ["graphics/maleWalk.png", "graphics/maleSlash.png", 
+                "graphics/maleHurt"],
             frames: {width: 64, height: 64, regX: 16, regY:32},
             animations: {
                 standDown: 18,
@@ -19,7 +20,8 @@ Painter = {
                 slashUp: [36,41],
                 slashLeft: [42,47],
                 slashDown: [48,53],
-                slashRight: [54,59]
+                slashRight: [54,59],
+                die: [60,66]
             }
         }
         Painter.playerImage = new SpriteSheet(playerSpritesheetData);
@@ -316,6 +318,10 @@ PlayerImage.prototype.attackMelee = function(dir){
         requestAnimationFrame(callback);
     }
     requestAnimationFrame(callback);
+}
+
+Player.prototype.die = function(){
+    
 }
 
 /**
