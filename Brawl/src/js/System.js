@@ -380,7 +380,7 @@ MapObject.prototype.hasCharacter = function(){
         for(var i in Game.players){
             i = Game.players[i];
             if(i.x === this.x && i.y === this.y){
-                return true;
+                return i.index;
             }
         }
         return false;
@@ -435,6 +435,7 @@ Game = {
  * The player object, constructor automatically spawns it
  */
 function Player(){
+    this.index = Game.players.length;
     Game.players.push(this);
     /** @type PlayerImage */
     this.playerImage = new PlayerImage();
@@ -568,42 +569,50 @@ Player.prototype.takeTurn = function(){
     var y = this.shadowY-1;
     var x = this.shadowX-1;
     var mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    var cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++x;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     y -= 2;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++x;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
-    if(mapObj.hasCharacter()) stageMarker.addChild(
+    cha = mapObj.hasCharacter();
+    if(cha && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     stageMarker.update();
