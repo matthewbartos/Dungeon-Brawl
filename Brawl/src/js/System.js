@@ -432,9 +432,9 @@ Game = {
 }
 
 /**
- * The player object, constructor automatically spawns it
+ * The player object, constructor automatically spawns it and sets attributes
  */
-function Player(){
+function Player(hitPts, defense){
     this.index = Game.players.length;
     Game.players.push(this);
     /** @type PlayerImage */
@@ -447,6 +447,9 @@ function Player(){
     this.actions = [];
     this.spawn();
     this.actionPoints = 0;
+	this.setAttributes();
+	this.hitPts = hitPts;
+	this.defense = defense;
 }
 
 /**
@@ -466,6 +469,14 @@ Player.prototype.spawn = function(x,y){
     }
     this.setCoords(x,y);
     this.playerImage.placeAt(x, y);
+}
+
+/**
+Sets attributes for player
+*/
+Player.prototype.setAttributes = function(){
+	this.hitPts = 100;
+	this.defense = 3;
 }
 
 /**
@@ -680,6 +691,47 @@ Player.prototype.action = function(x, y){
             }
         }
     }
+}
+
+/**
+FIGHT ENGINE
+* 5 attack zones(at this moment only for distance): head, torso, hands, stomach, legs; every zone has its own damage multiplier
+*/
+
+/**
+* Makes melee attack and deals damage to the opponent
+* @param {Number} dmg Value of damage; is here temporarily, then it will be in object as var 'attack'
+*/
+Player.prototype.playerAttackMelee = function (dmg){
+	dmg = Math.floor(Math.random()*10); //temporary, for tests
+
+	if (dmg<=this.def){  //parry
+		console.log('Parry'); 
+	} else { this.hitPts -= (dmg - this.def);} //attack value is equal to substraction of damage and defense
+}
+/**
+* Makes distance attack and deals damage to the opponent
+*/
+Player.prototype.playerDistanceAttack = function() {
+	var bodyZ =  1+(Math.floor(Math.random()*9)); //selecting body zone
+	switch(bodyZ){
+	case (1|| 2)://torso
+		this.hitPts -= Math.floor((1,25 * (dmg - this.def)));
+		break;
+	case (3 || 4): //hands
+		this.hitPts -= Math.floor((0,75 * (dmg - this.def)));
+		break;
+	case (5 || 6): //stomach
+		this.hitPts -= Math.floor((1 * (dmg - this.def)));
+		break;
+	case (7 || 8): //legs
+		this.hitPts -= Math.floor((1,25 * (dmg - this.def)));
+		break;
+	case (9): //head
+		this.hitPts -= Math.floor((2 * (dmg - this.def)));
+		break;
+	default: console.log('Shot missed');
+	}
 }
 
 var requestAnimationFrame = window.requestAnimationFrame || 
