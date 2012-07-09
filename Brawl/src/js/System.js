@@ -825,7 +825,7 @@ Player.prototype.dealDamage = function(dmg, defence){
  * Kills the character and makes the player pay the consequances
  */
 Player.prototype.die = function(){
-    console.log("DEAD");
+    this.playerImage.die();
 }
 
 var requestAnimationFrame = window.requestAnimationFrame || 
