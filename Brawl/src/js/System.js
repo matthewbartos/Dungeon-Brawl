@@ -557,7 +557,8 @@ Player.prototype.addAction = function(type, properties){
             this.actions.push({actionType:type, props:null});
             break;
         case 'attackMelee' :
-            this.actions.push({actionType:type, props:properties[0]});
+            this.actions.push({actionType:type, props:{player:properties[0],
+                    dir:properties[1]}});
             break;
     }
 }
@@ -571,10 +572,10 @@ Player.prototype.shadowAction = function(index){
             if(y > 0){
                 this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
                     'down');
-            }else if(y <= 0 && x > 0){
+            }else if(x > 0){
                 this.placeShadowAt(this.shadowX + x, this.shadowY + y,
                     'right');
-            }else if(y <= 0 && x < 0){
+            }else if(x < 0){
                 this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
                     'left');
             }else{
@@ -597,6 +598,7 @@ Player.prototype.playAction = function(){
 }
 
 Player.prototype.startRound = function(){
+    GameMap.moveToTile(this.x, this.y);
     this.actionPoints += 3;
     for(var i in this.actions){
         this.shadowAction(i);
@@ -622,49 +624,49 @@ Player.prototype.takeTurn = function(){
     var x = this.shadowX-1;
     var mapObj = GameMap.map[y][x];
     var cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++x;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     y -= 2;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++x;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     ++y;
     mapObj = GameMap.map[y][x];
     cha = mapObj.hasCharacter();
-    if(cha && cha !== this.index) stageMarker.addChild(
+    if(cha !== false && cha !== this.index) stageMarker.addChild(
         Painter.easelShapes.createRedSquare(x,y,true));
     else if(mapObj.marker) mapObj.marker.alpha = 1;
     stageMarker.update();
@@ -687,9 +689,19 @@ Player.prototype.action = function(x, y){
         if(right >= -1 && right <= 1 && down >= -1 && down <= 1){
             var mapObj = GameMap.map[y][x];
             var cha = mapObj.hasCharacter();
-            if(cha && cha !== this.index){
+            if(cha !== false && cha !== this.index){
                 --this.actionPoints;
-                this.addAction('attackMelee', [Game.players[cha]]);
+                var dir;
+                if(down > 0){
+                    dir = 'down'
+                }else if(right > 0){
+                    dir = 'right'
+                }else if(right < 0){
+                    dir = 'left';
+                }else{
+                    dir = 'up';
+                }
+                this.addAction('attackMelee', [Game.players[cha],dir]);
                 this.shadowAction(this.actions.length-1);
                 this.takeTurn();
             }else{
@@ -727,10 +739,15 @@ FIGHT ENGINE
 /**
 * Makes melee attack and deals damage to the opponent
 * @param {Player} player Attacked player
+* @param {string} dir Direction the bitmap should be facing
 */
-Player.prototype.attackMelee = function (player){
+Player.prototype.attackMelee = function (player,dir){
+    if(typeof player === 'object'){
+        dir = player.dir;
+        player = player.player;
+    }
+    this.playerImage.attackMelee(dir);
     var dmg = Math.floor(Math.random()*10); //temporary, for tests
-    console.log(dmg, dmg-player.def);
     if(dmg <= player.def){  //parry
         console.log('Parry'); 
     }else player.hitPts -= (dmg - player.def); //attack value is equal to substraction of damage and defense

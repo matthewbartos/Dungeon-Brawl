@@ -272,15 +272,46 @@ PlayerImage.prototype.walk = function(right,down){
 }
 
 PlayerImage.prototype.attackMelee = function(dir){
+    var ended;
     switch(dir){
         case 'down' :
             this.bitmap.gotoAndPlay('slashDown');
+            this.bitmap.onAnimationEnd = function(){
+                ended = true;
+                that.bitmap.gotoAndStop('standDown');
+            }
+            break;
+        case 'left' :
+            this.bitmap.gotoAndPlay('slashLeft');
+            this.bitmap.onAnimationEnd = function(){
+                ended = true;
+                that.bitmap.gotoAndStop('standLeft');
+            }
+            break;
+        case 'right' :
+            this.bitmap.gotoAndPlay('slashRight');
+            this.bitmap.onAnimationEnd = function(){
+                ended = true;
+                that.bitmap.gotoAndStop('standRight');
+            }
+            break;
+        case 'up' :
+            this.bitmap.gotoAndPlay('slashUp');
+            this.bitmap.onAnimationEnd = function(){
+                ended = true;
+                that.bitmap.gotoAndStop('standUp');
+            }
             break;
     }
     var previousTime = Date.now();
+    var that = this;
     var callback = function(time){
-        if(time - previousTime > 50){
+        if(time - previousTime > 50 && !ended){
+            previousTime = Date.now();
             stagePlayer.update();
+        }else if(ended){
+            that.onAnimationEnd();
+            return;
         }
         requestAnimationFrame(callback);
     }
