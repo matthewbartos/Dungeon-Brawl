@@ -5,7 +5,7 @@
 Painter = {
     loadImages: function(){
         var playerSpritesheetData = {
-            images: ["graphics/maleWalk.png"],
+            images: ["graphics/maleWalk.png", "graphics/maleSlash.png"],
             frames: {width: 64, height: 64, regX: 16, regY:32},
             animations: {
                 standDown: 18,
@@ -15,11 +15,14 @@ Painter = {
                 walkRight: [27,35],
                 walkLeft: [9,17],
                 walkUp: [0,8],
-                walkDown: [18,26]
+                walkDown: [18,26],
+                slashUp: [36,41],
+                slashLeft: [42,47],
+                slashDown: [48,53],
+                slashRight: [54,59]
             }
         }
         Painter.playerImage = new SpriteSheet(playerSpritesheetData);
-        
     },
     /**
      * Draws the map on the canvases
@@ -262,6 +265,22 @@ PlayerImage.prototype.walk = function(right,down){
             stagePlayer.update();
             playerImage.onAnimationEnd();
             return;
+        }
+        requestAnimationFrame(callback);
+    }
+    requestAnimationFrame(callback);
+}
+
+PlayerImage.prototype.attackMelee = function(dir){
+    switch(dir){
+        case 'down' :
+            this.bitmap.gotoAndPlay('slashDown');
+            break;
+    }
+    var previousTime = Date.now();
+    var callback = function(time){
+        if(time - previousTime > 50){
+            stagePlayer.update();
         }
         requestAnimationFrame(callback);
     }

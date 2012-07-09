@@ -360,6 +360,17 @@ GameMap = {
         return {x: Math.floor((x - containerGlobal.x)/33/System.scale), 
             y: Math.floor((y - containerGlobal.y)/33/System.scale)};
     },
+    getLevelOf: function(x,y){
+        var level;
+        if(Math.floor(x) === x && Math.floor(y) === y){
+            level = GameMap.map[y][x].level;
+        }else{
+            var level1 = GameMap.map[Math.floor(y)][Math.floor(x)].level;
+            var level2 = GameMap.map[Math.ceil(y)][Math.ceil(x)].level;
+            level = (level1 + level2)/2;
+        }
+        return level;
+    },
     map: [],
     tmxMap: null,
     onParsed: null,
@@ -434,7 +445,7 @@ Game = {
 /**
  * The player object, constructor automatically spawns it and sets attributes
  */
-function Player(hitPts, defense){
+function Player(){
     this.index = Game.players.length;
     Game.players.push(this);
     /** @type PlayerImage */
@@ -444,12 +455,11 @@ function Player(hitPts, defense){
     this.shadowX = this.x;
     this.shadowY = this.y;
     this.level = 0;
+    this.shadowLevel = 0;
     this.actions = [];
     this.spawn();
     this.actionPoints = 0;
-	this.setAttributes();
-	this.hitPts = hitPts;
-	this.defense = defense;
+    this.setAttributes(30, 3);
 }
 
 /**
@@ -472,11 +482,18 @@ Player.prototype.spawn = function(x,y){
 }
 
 /**
-Sets attributes for player
-*/
-Player.prototype.setAttributes = function(){
-	this.hitPts = 100;
-	this.defense = 3;
+ * Sets attributes for player
+ * @param {number} hp Number of hit points
+ * @param {number} def Number of defence points
+ */
+Player.prototype.setAttributes = function(hp, def){
+	this.hitPts = hp;
+	this.def = def;
+}
+
+Player.prototype.setLevel = function(level){
+    this.level = level;
+    this.shadowLevel = level;
 }
 
 /**
@@ -489,13 +506,7 @@ Player.prototype.setCoords = function(x, y){
     this.shadowX = x;
     this.y = y;
     this.shadowY = y;
-    if(Math.floor(x) === x && Math.floor(y) === y){
-        this.level = GameMap.map[y][x].level;
-    }else{
-        var level1 = GameMap.map[Math.floor(y)][Math.floor(x)].level;
-        var level2 = GameMap.map[Math.ceil(y)][Math.ceil(x)].level;
-        this.level = (level1 + level2)/2;
-    }
+    this.setLevel(GameMap.getLevelOf(x,y));
 }
 
 /**
@@ -528,6 +539,7 @@ Player.prototype.placeShadowAt = function(x,y,dir){
     this.playerImage.placeShadowAt(x,y,dir);
     this.shadowX = x;
     this.shadowY = y;
+    this.shadowLevel = GameMap.getLevelOf(x,y);
 }
 
 /**
@@ -544,7 +556,33 @@ Player.prototype.addAction = function(type, properties){
         case 'wait' :
             this.actions.push({actionType:type, props:null});
             break;
+        case 'attackMelee' :
+            this.actions.push({actionType:type, props:properties[0]});
+            break;
     }
+}
+
+Player.prototype.shadowAction = function(index){
+    var action = this.actions[index];
+    switch(action.actionType){
+        case 'walk' :
+            var x = action.props.right;
+            var y = action.props.down;
+            if(y > 0){
+                this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                    'down');
+            }else if(y <= 0 && x > 0){
+                this.placeShadowAt(this.shadowX + x, this.shadowY + y,
+                    'right');
+            }else if(y <= 0 && x < 0){
+                this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                    'left');
+            }else{
+                this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
+                    'up');
+            }
+            break;
+    } 
 }
 
 /**
@@ -560,6 +598,9 @@ Player.prototype.playAction = function(){
 
 Player.prototype.startRound = function(){
     this.actionPoints += 3;
+    for(var i in this.actions){
+        this.shadowAction(i);
+    }
     this.takeTurn();
 }
 
@@ -641,53 +682,38 @@ Player.prototype.action = function(x, y){
             y = x.y;
             x = x.x;
         }
-        var mapObj = GameMap.map[y][x];
-        var action = mapObj.action;
-        x = x - this.shadowX;
-        y = y - this.shadowY;
-        if(x >= -1 && x <= 1 && y >= -1 && y <= 1){
-            var levelDifference = Math.floor(Math.abs(this.level - mapObj.level));
-            if(levelDifference){
-                this.actionPoints -= levelDifference;
-                this.addAction('wait');
-            }
-            switch(action){
-                case 'walk' :
-                    --this.actionPoints;
-                    if(y > 0){
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
-                            'down');
-                    }else if(y <= 0 && x > 0){
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y,
-                            'right');
-                    }else if(y <= 0 && x < 0){
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
-                            'left');
-                    }else{
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
-                            'up');
-                    }
-                    this.addAction('walk', [x,y]);
-                    this.takeTurn();
-                    break;
-                case 'walk on uneven terrain' :
-                    --this.actionPoints;
-                    if(y > 0){
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
-                            'down');
-                    }else if(y <= 0 && x > 0){
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y,
-                            'right');
-                    }else if(y <= 0 && x < 0){
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
-                            'left');
-                    }else{
-                        this.placeShadowAt(this.shadowX + x, this.shadowY + y, 
-                            'up');
-                    }
-                    this.addAction('walk', [x,y]);
-                    this.takeTurn();
-                    break;
+        var right = x - this.shadowX;
+        var down = y - this.shadowY;
+        if(right >= -1 && right <= 1 && down >= -1 && down <= 1){
+            var mapObj = GameMap.map[y][x];
+            var cha = mapObj.hasCharacter();
+            if(cha && cha !== this.index){
+                --this.actionPoints;
+                this.addAction('attackMelee', [Game.players[cha]]);
+                this.shadowAction(this.actions.length-1);
+                this.takeTurn();
+            }else{
+                var action = mapObj.action;
+                var levelDifference = Math.floor(Math.abs(this.shadowLevel - 
+                    mapObj.level));
+                if(levelDifference){
+                    this.actionPoints -= levelDifference;
+                    this.addAction('wait');
+                }
+                switch(action){
+                    case 'walk' :
+                        --this.actionPoints;
+                        this.addAction('walk', [right,down]);
+                        this.shadowAction(this.actions.length-1);
+                        this.takeTurn();
+                        break;
+                    case 'walk on uneven terrain' :
+                        --this.actionPoints;
+                        this.addAction('walk', [right,down]);
+                        this.shadowAction(this.actions.length-1);
+                        this.takeTurn();
+                        break;
+                }
             }
         }
     }
@@ -700,14 +726,14 @@ FIGHT ENGINE
 
 /**
 * Makes melee attack and deals damage to the opponent
-* @param {Number} dmg Value of damage; is here temporarily, then it will be in object as var 'attack'
+* @param {Player} player Attacked player
 */
-Player.prototype.playerAttackMelee = function (dmg){
-	dmg = Math.floor(Math.random()*10); //temporary, for tests
-
-	if (dmg<=this.def){  //parry
-		console.log('Parry'); 
-	} else { this.hitPts -= (dmg - this.def);} //attack value is equal to substraction of damage and defense
+Player.prototype.attackMelee = function (player){
+    var dmg = Math.floor(Math.random()*10); //temporary, for tests
+    console.log(dmg, dmg-player.def);
+    if(dmg <= player.def){  //parry
+        console.log('Parry'); 
+    }else player.hitPts -= (dmg - player.def); //attack value is equal to substraction of damage and defense
 }
 /**
 * Makes distance attack and deals damage to the opponent
