@@ -99,17 +99,25 @@ Painter = {
          * @param {Number} x Coord x
          * @param {Number} y Coord y
          */
-        createGreenSquare: function(x,y){
-            return this._createSquare(30,200,30,x,y);    
+        createGreenSquare: function(x,y,visible){
+            var s = this._createSquare(30,200,30,x,y,visible);
+            s.color = 'green';
+            return s;    
         },
-        createBlackSquare: function(x,y){
-            return this._createSquare(0,0,0,x,y);
+        createBlackSquare: function(x,y,visible){
+            var s = this._createSquare(0,0,0,x,y,visible);
+            s.color = 'black';
+            return s;
         },
-        createBlueSquare: function(x,y){
-            return this._createSquare(30,30,200,x,y);
+        createBlueSquare: function(x,y,visible){
+            var s = this._createSquare(30,30,200,x,y,visible);
+            s.color = 'blue';
+            return s;
         },
         createRedSquare: function(x,y, visible){
-            return this._createSquare(200,30,30,x,y,visible);
+            var s = this._createSquare(200,30,30,x,y,visible);
+            s.color = 'red';
+            return s;
         }
     }
 }

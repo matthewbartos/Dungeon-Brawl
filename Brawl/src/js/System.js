@@ -22,6 +22,16 @@ System = {
         stageMapFront = new Stage(canvasMapFront);
         stagePlayer = new Stage(canvasPlayer);
         stageMarker = new Stage(canvasMarker);
+        stageMarker.clearAllMarkers = function(){
+            this.children.forEach(function(i){
+                if(i.color === 'red'){
+                    stageMarker.removeChild(i);
+                }else{
+                    i.alpha = 0;
+                }
+            });
+            stageMarker.update();
+        }
         containerGlobal = new Container();
         containerGlobal.addChild(stageBaseMap);
         containerGlobal.addChild(stageMapFront);
@@ -645,9 +655,7 @@ Player.prototype.startRound = function(){
  * take.
  */
 Player.prototype.takeTurn = function(){
-    stageMarker.children.forEach(function(i){
-        i.alpha = 0;
-    });
+    stageMarker.clearAllMarkers();
     if(this.actionPoints <= 0){
         this.playerImage.hideShadows();
         stageMarker.update();
