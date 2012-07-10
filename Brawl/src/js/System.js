@@ -26,8 +26,10 @@ System = {
             this.children.forEach(function(i){
                 if(i.color === 'red'){
                     stageMarker.removeChild(i);
-                }else{
+                }else if(i.color !== 'FOV'){
                     i.alpha = 0;
+                }else{
+                    i.alpha = 1;
                 }
             });
             stageMarker.update();
@@ -406,6 +408,15 @@ MapObject = function(x,y){
     this.imageDecB = [];
     this.imageDecF = [];
     this.level = 0;
+    var g = new Graphics();
+    g.beginFill(Graphics.getRGB(0,0,0,0.4));
+    g.drawRect(0,0,32,32);
+    var s = new Shape(g);
+    s.x = x*33;
+    s.y = y*33;
+    s.color = 'FOV';
+    this.FOV_Shape = s;
+    stageMarker.addChild(s);
 }
 
 /**
@@ -414,14 +425,20 @@ MapObject = function(x,y){
  * Game.players array, false if there's no one.
  */
 MapObject.prototype.hasCharacter = function(){
-        for(var i in Game.players){
-            i = Game.players[i];
-            if(i.x === this.x && i.y === this.y){
-                return i.index;
-            }
+    for(var i in Game.players){
+        i = Game.players[i];
+        if(i.x === this.x && i.y === this.y){
+            return i.index;
         }
-        return false;
     }
+    return false;
+}
+
+MapObject.prototype.hideFOVShape = function(){
+    this.FOV_Shape.alpha = 0;
+}
+
+
 Game = {
     /**
      * Cycles through players and waits for their input
@@ -662,55 +679,32 @@ Player.prototype.takeTurn = function(){
         Game.round();
         return;
     }
-    var y = this.shadowY-1;
-    var x = this.shadowX-1;
-    var mapObj = GameMap.map[y][x];
-    var cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    ++y;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    ++y;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    ++x;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    y -= 2;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    ++x;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    ++y;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
-    ++y;
-    mapObj = GameMap.map[y][x];
-    cha = mapObj.hasCharacter();
-    if(cha !== false && cha !== this.index) stageMarker.addChild(
-        Painter.easelShapes.createRedSquare(x,y,true));
-    else if(mapObj.marker) mapObj.marker.alpha = 1;
+    var startingY = this.shadowY-3;
+    while(startingY < 0) ++startingY;
+    var endingY = this.shadowY+3;
+    while(endingY >= GameMap.tmxMap.height) --endingY;
+    var startingX = this.shadowX-3;
+    while(startingX < 0) ++startingX;
+    var endingX = this.shadowX+3;
+    while(endingX >= GameMap.tmxMap.width) --endingX;
+    for(var y = startingY; y <= endingY; y++){
+        for(var x = startingX; x <= endingX; x++){
+            var mapObj = GameMap.map[y][x];
+            mapObj.hideFOVShape();
+            var cha = mapObj.hasCharacter();
+            if(cha !== false && cha !== this.index){
+                stageMarker.addChild(
+                    Painter.easelShapes.createRedSquare(x,y,true));
+                continue;
+            }
+            var localX = x - this.shadowX;
+            var localY = y - this.shadowY;
+            if(!(localX === 0 && localY === 0) && localX >= -1 && localX <= 1 &&
+                    localY >= -1 && localY <= 1){
+                mapObj.marker.alpha = 1;
+            }
+        }
+    }
     stageMarker.update();
 }
 
