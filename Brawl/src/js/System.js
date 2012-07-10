@@ -701,7 +701,7 @@ Player.prototype.takeTurn = function(){
             var localY = y - this.shadowY;
             if(!(localX === 0 && localY === 0) && localX >= -1 && localX <= 1 &&
                     localY >= -1 && localY <= 1){
-                mapObj.marker.alpha = 1;
+                if(mapObj.marker) mapObj.marker.alpha = 1;
             }
         }
     }
