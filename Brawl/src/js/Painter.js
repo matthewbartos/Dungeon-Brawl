@@ -329,6 +329,16 @@ PlayerImage.prototype.attackMelee = function(dir){
     requestAnimationFrame(callback);
 }
 
+PlayerImage.prototype.faceDir = function(dir){
+    switch(dir){
+        case 'down' : this.bitmap.gotoAndStop('standDown'); break;
+        case 'up' : this.bitmap.gotoAndStop('standUp'); break;
+        case 'left' : this.bitmap.gotoAndStop('standLeft'); break;
+        case 'right' : this.bitmap.gotoAndStop('standRight'); break;
+    }
+    stagePlayer.update();
+}
+
 PlayerImage.prototype.die = function(){
     var ended;
     this.bitmap.gotoAndPlay('die');

@@ -503,6 +503,7 @@ function Player(){
     this.level = 0;
     this.shadowLevel = 0;
     this.actions = [];
+    this.dir = null;
     this.spawn();
     this.actionPoints = 0;
     this.setAttributes(30, 3);
@@ -523,6 +524,7 @@ Player.prototype.spawn = function(x,y){
         y = x.y;
         x = x.x;
     }
+    this.faceDir();
     this.setCoords(x,y);
     this.playerImage.placeAt(x, y);
 }
@@ -533,8 +535,8 @@ Player.prototype.spawn = function(x,y){
  * @param {number} def Number of defence points
  */
 Player.prototype.setAttributes = function(hp, def){
-	this.hitPts = hp;
-	this.def = def;
+    this.hitPts = hp;
+    this.def = def;
 }
 
 /**
@@ -580,6 +582,20 @@ Player.prototype.walk = function(right,down){
  */
 Player.prototype.wait = function(){
     this.playerImage.onAnimationEnd();
+}
+
+/**
+ * Changes the direction of the player
+ * @param {string} [dir] The direction the player should be facing, if not given
+ * the direction is chosen randomly
+ */
+Player.prototype.faceDir = function(dir){
+    if(!dir){
+        var directions = ['down', 'up', 'left', 'right'];
+        dir = directions[Math.floor(Math.random()*4)];
+    }
+    this.dir = dir;
+    this.playerImage.faceDir(dir);
 }
 
 /**
