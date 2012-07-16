@@ -461,10 +461,10 @@ Game = {
         var actionsPlayed = 0;
         function play(){
             for(var i in Game.players){
-                Game.players[i].playAction();
                 Game.players[i].playerImage.onAnimationEnd = function(){
                     Game.animated.push(true);
                 }
+                Game.players[i].playAction();
             }
             ++actionsPlayed;
             var interval = setInterval(function(){
@@ -552,13 +552,20 @@ Player.prototype.setLevel = function(level){
  * Sets the x coord of the player, and also it's shadow coord
  * @param {number} x Coord x
  * @param {number} y Coord y
+ * @param {boolean} isFalling Whether the character is falling.
  */
-Player.prototype.setCoords = function(x, y){
+Player.prototype.setCoords = function(x, y, isFalling){
     this.x = x;
     this.shadowX = x;
     this.y = y;
     this.shadowY = y;
-    this.setLevel(GameMap.getLevelOf(x,y));
+    if(!isFalling){
+        this.setLevel(GameMap.getLevelOf(x,y));
+    }
+}
+
+Player.prototype.substractActionPoints = function(n){
+    this.actionPoints -= n;
 }
 
 /**
@@ -582,6 +589,30 @@ Player.prototype.walk = function(right,down){
  */
 Player.prototype.wait = function(){
     this.playerImage.onAnimationEnd();
+}
+
+Player.prototype.fall = function(right, down, fall){
+    if(typeof right === 'object'){
+        down = right.down;
+        fall = right.fall;
+        right = right.right;
+    }
+    this.playerImage.fall(right,down);
+    this.setCoords(this.x + right, this.y + down, true);
+    if(!fall){
+        this.addAction("fall", [right, down, 2]);
+        this.substractActionPoints(1);
+    }else{
+        if(fall < 0){
+            this.substractActionPoints(1);
+            fall = 3;
+        }
+        --this.shadowLevel;
+        var mapObj = GameMap.map[this.shadowY + 1][this.shadowX];
+        if(mapObj.getLevel() < this.shadowLevel){
+            this.addAction("fall", [0,1, fall-1]);
+        }
+    }
 }
 
 /**
@@ -628,6 +659,10 @@ Player.prototype.addAction = function(type, properties){
         case 'attackMelee' :
             this.actions.push({actionType:type, props:{player:properties[0],
                     dir:properties[1]}});
+            break;
+        case 'fall' : 
+            this.actions.push({actionType:type, props:{right:properties[0],
+                down:properties[1], isFalling:properties[2]}});
             break;
     }
 }

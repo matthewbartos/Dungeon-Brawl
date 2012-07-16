@@ -6,23 +6,31 @@ Painter = {
     loadImages: function(){
         var playerSpritesheetData = {
             images: ["graphics/maleWalk.png", "graphics/maleSlash.png", 
-                "graphics/maleHurt.png"],
+                "graphics/maleHurt.png", "graphics/maleSpellcast.png"],
             frames: {width: 64, height: 64, regX: 16, regY:32},
             animations: {
                 standDown: 18,
                 standUp: 0,
                 standLeft: 9,
                 standRight: 27,
+                fallUp: 71,
+                fallLeft: 78,
+                fallDown: 85,
+                fallRight: 92,
                 walkRight: [27,35],
                 walkLeft: [9,17],
                 walkUp: [0,8],
                 walkDown: [18,26],
-                slashUp: [36,41],
-                slashLeft: [42,47],
-                slashDown: [48,53],
-                slashRight: [54,59],
+                slashUp: [36,41, "standUp"],
+                slashLeft: [42,47, "standLeft"],
+                slashDown: [48,53, "standDown"],
+                slashRight: [54,59, "standRight"],
                 die: [60,65],
-                dead: [65]
+                dead: [65],
+                stand: {
+                    frames: [64,63,62,61,60],
+                    next: 'standDown'
+                }
             }
         }
         Painter.playerImage = new SpriteSheet(playerSpritesheetData);
@@ -173,6 +181,37 @@ PlayerImage.prototype.placeAt = function(x,y){
 }
 
 /**
+ * Moves the bitmap
+ * @param {number} right How far to the right (in tiles) the bitmap should be
+ * moved
+ * @param {number} down How far down (in tiles) the bitmap should be
+ * moved
+ * @param {number} timeOfAnimation How long the movement should take, the longer,
+ * the slower the movement will be
+ */
+PlayerImage.prototype.moveTo = function(right,down,timeOfAnimation){
+    var that = this;
+    var i = 0;
+    right = right * 33 / timeOfAnimation;
+    down = down * 33 / timeOfAnimation;
+    var previousTime = Date.now();
+    var callback = function(time){
+        if(time - previousTime > 50 && i < timeOfAnimation){
+            that.bitmap.x = that.bitmap.x+right;
+            that.bitmap.y = that.bitmap.y+down;
+            ++i
+            stagePlayer.update();
+            previousTime = Date.now();
+        }else if(i >= timeOfAnimation){
+            that.onAnimationEnd();
+            return;
+        }
+        requestAnimationFrame(callback);
+    }
+    requestAnimationFrame(callback);
+}
+
+/**
  * Places the shadow at specified coords, in the direction given
  * @param {number} x Coord x
  * @param {number} y Coord y
@@ -217,6 +256,9 @@ PlayerImage.prototype.placeShadowAt = function(x,y,dir){
     }
 }
 
+/**
+ * Hides all the shadows of the PlayerImage
+ */
 PlayerImage.prototype.hideShadows = function(){
     for(var i in this.shadows){
         var shadow = this.shadows[i]
@@ -245,43 +287,66 @@ PlayerImage.prototype.walk = function(right,down){
     }else{
         this.bitmap.gotoAndPlay("walkUp");
     }
-    var that = this;
-    var i = 0;
-    var speed = 3;
-    var maxIterations = Math.abs(right) > Math.abs(down) ? 
-        Math.abs(33*right)/speed : Math.abs(33*down)/speed;
-    if(right > 0) right = speed;
-    else if(right < 0) right = -speed;
-    if(down > 0) down = speed;
-    else if(down < 0) down = -speed;
-    var previousTime = Date.now();
-    var playerImage = this;
-    var callback = function(time){
-        if(time - previousTime > 50 && i < maxIterations){
-            that.bitmap.x = that.bitmap.x+right;
-            that.bitmap.y = that.bitmap.y+down;
-            ++i;
-            stagePlayer.update();
-            previousTime = Date.now();
-        }else if(i >= maxIterations){
-            if(that.bitmap.currentAnimation === "walkDown"){
-                that.bitmap.gotoAndStop("standDown");
-            }else if(that.bitmap.currentAnimation === "walkRight"){
-                that.bitmap.gotoAndStop("standRight");
-            }else if(that.bitmap.currentAnimation === "walkLeft"){
-                that.bitmap.gotoAndStop("standLeft");
-            }else{
-                that.bitmap.gotoAndStop("standUp");
-            }
-            stagePlayer.update();
-            playerImage.onAnimationEnd();
-            return;
+    var event = this.onAnimationEnd;
+    this.onAnimationEnd = function(){
+        if(this.bitmap.currentAnimation === "walkDown"){
+            this.bitmap.gotoAndStop("standDown");
+        }else if(this.bitmap.currentAnimation === "walkRight"){
+            this.bitmap.gotoAndStop("standRight");
+        }else if(this.bitmap.currentAnimation === "walkLeft"){
+            this.bitmap.gotoAndStop("standLeft");
+        }else{
+            this.bitmap.gotoAndStop("standUp");
         }
-        requestAnimationFrame(callback);
+        stagePlayer.update();
+        event();
     }
-    requestAnimationFrame(callback);
+    this.moveTo(right, down,10);
 }
 
+PlayerImage.prototype._fall = function(right, down){
+    if(this.bitmap.currentAnimation.indexOf("fall") === -1){
+        if(Math.abs(right) > Math.abs(down)){
+            if(right < 0){
+                this.bitmap.gotoAndStop('fallLeft');
+            }else{
+                this.bitmap.gotoAndStop('fallRight');
+            }
+        }else if(down > 0){
+            this.bitmap.gotoAndStop('fallDown');
+        }else{
+            this.bitmap.gotoAndStop('fallUp');
+        }
+    }
+    this.moveTo(right, down, 3);
+}
+
+/**
+ * Makes the player fall going through the specified path
+ * @param {object[]} path An array of objects with parameters right and down
+ */
+PlayerImage.prototype.fall = function(path){
+    var event = this.onAnimationEnd;
+    var i = 0;
+    var that = this;
+    this.onAnimationEnd = function(){
+        ++i;
+        if(i >= path.length){
+            that.onAnimationEnd = event;
+            that.standUp();
+            return;
+        }
+        var step = path[i];
+        that._fall(step.right, step.down);
+    }
+    this._fall(path[i].right, path[i].down);
+}
+
+/**
+ * Fires the malee attack animation 
+ * @param {string} dir The direction the player should be facing when attacking,
+ * possible values are 'down', 'left', 'right' and 'up'
+ */
 PlayerImage.prototype.attackMelee = function(dir){
     var ended;
     switch(dir){
@@ -289,28 +354,24 @@ PlayerImage.prototype.attackMelee = function(dir){
             this.bitmap.gotoAndPlay('slashDown');
             this.bitmap.onAnimationEnd = function(){
                 ended = true;
-                that.bitmap.gotoAndStop('standDown');
             }
             break;
         case 'left' :
             this.bitmap.gotoAndPlay('slashLeft');
             this.bitmap.onAnimationEnd = function(){
                 ended = true;
-                that.bitmap.gotoAndStop('standLeft');
             }
             break;
         case 'right' :
             this.bitmap.gotoAndPlay('slashRight');
             this.bitmap.onAnimationEnd = function(){
                 ended = true;
-                that.bitmap.gotoAndStop('standRight');
             }
             break;
         case 'up' :
             this.bitmap.gotoAndPlay('slashUp');
             this.bitmap.onAnimationEnd = function(){
                 ended = true;
-                that.bitmap.gotoAndStop('standUp');
             }
             break;
     }
@@ -329,6 +390,9 @@ PlayerImage.prototype.attackMelee = function(dir){
     requestAnimationFrame(callback);
 }
 
+/**
+ * Changes the direction the player faces
+ */
 PlayerImage.prototype.faceDir = function(dir){
     switch(dir){
         case 'down' : this.bitmap.gotoAndStop('standDown'); break;
@@ -337,8 +401,35 @@ PlayerImage.prototype.faceDir = function(dir){
         case 'right' : this.bitmap.gotoAndStop('standRight'); break;
     }
     stagePlayer.update();
+},
+
+/**
+ * Fires the stand up animation
+ */
+PlayerImage.prototype.standUp = function(){
+    this.bitmap.gotoAndPlay('stand');
+    var ended;
+    this.bitmap.onAnimationEnd = function(){
+        ended = true;
+    }
+    var previousTime = Date.now();
+    var that = this;
+    var callback = function(time){
+        if(time - previousTime > 75 && !ended){
+            previousTime = Date.now();
+            stagePlayer.update();
+        }else if(ended){
+            that.onAnimationEnd();
+            return;
+        }
+        requestAnimationFrame(callback);
+    }
+    requestAnimationFrame(callback);
 }
 
+/**
+ * Fires the die animation
+ */
 PlayerImage.prototype.die = function(){
     var ended;
     this.bitmap.gotoAndPlay('die');
